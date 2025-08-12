@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <title></title>
+    <style>
+        @font-face {
+            font-family: 'BpmfGenSenRounded';
+            src: url('../fonts/BpmfGenSenRounded-R.ttf') format('truetype');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+        }
+
+        *::-webkit-scrollbar {
+            width: 0;
+            /* Chrome, Safari, Opera */
+            display: none;
+        }
+
+        html {
+            overflow-y: scroll;
+            scrollbar-gutter: stable;
+            touch-action: manipulation; /* 防止瀏覽器預設的縮放行為 */
+        }
+
+        body {
+            font-family: 'BpmfGenSenRounded', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            position: relative;
+            margin-right: calc(100vw - 100%);
+            /* 防止滾動條出現時的跳動 */
+            height: 100vh;
+            -webkit-text-size-adjust: 100%; /* 禁止iOS調整文字大小 */
+            -webkit-touch-callout: none; /* 禁止長按呼出選單 */
+            -webkit-user-select: none; /* 禁止選取文字 */
+            user-select: none;
+        }
+
+        @supports (-webkit-touch-callout: none) {
+            /* iOS 裝置特定樣式 */
+            body {
+                height: -webkit-fill-available;
+                /* 為 iOS Safari 底部導覽列添加安全區域 */
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+
+            /* 在 iOS 中，結果頁面也需要考慮底部安全區域 */
+            body.show-results {
+                height: auto;
+                padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+            }
+
+            /* 在 iOS 中調整容器高度，考慮底部導覽列 */
+            .container {
+                min-height: calc(100vh - env(safe-area-inset-bottom));
+                padding-bottom: calc(40px + env(safe-area-inset-bottom));
+            }
+
+            /* 修正 iOS 中在結果頁面時的滾動問題 */
+            @media (max-width: 768px) {
+                body {
+                    height: calc(100vh - 60px - env(safe-area-inset-bottom));
+                }
+                
+                .container {
+                    height: calc(100vh - 60px - env(safe-area-inset-bottom));
+                    min-height: calc(100vh - 60px - env(safe-area-inset-bottom));
+                }
+                
+                body.show-results .container {
+                    min-height: calc(100vh - 60px - env(safe-area-inset-bottom));
+                }
+            }
+        }
+
+        body.show-results {
+            overflow-y: auto;
+            height: auto;
+        }
+
+        .gradient-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            transition: background 0.5s ease;
+        }
+
+        /* 自定義滾動條樣式 */
+        .custom-scrollbar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 8px;
+            height: 100vh;
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .custom-scrollbar-thumb {
+            position: absolute;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .custom-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            min-height: 100vh;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 20px;
+            position: relative;
+            padding-bottom: 40px;
+            background: none;
+            z-index: 1;
+            transform: scale(0.9);
+            transform-origin: top center;
+            overflow-y: auto;
+        }
+
+        body.show-results .container {
+            height: auto;
+            min-height: calc(100vh - 60px);
+        }
+
+        .header-image {
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            transition: all 0.8s ease;
+            margin-top: 1rem;
+            position: relative; /* 設置為相對定位 */
+            z-index: 10; /* 確保在最上層 */
+        }
+
+        .header-image.quiz-mode {
+            max-width: 250px;
+            margin: 0; /* 移除邊距 */
+            transform: translateY(0);
+        }
+
+        /* 確保在結果頁面中，標題圖片保持位置不變 */
+        body.show-results .header-image.quiz-mode {
+            position: relative;
+            top: 0;
+            left: 0;
+            max-width: 250px;
+            margin: 0;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            display: none;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.6s ease;
+            background: none;
+            box-shadow: none;
+            /* margin: auto 0; */
+        }
+
+        .game-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s ease;
+        }
+
+        .quiz-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0; /* 移除底部邊距 */
+        }
+
+        .quiz-content {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .quiz-image-container {
+            width: 250px;
+            height: 250px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            backdrop-filter: blur(5px);
+        }
+
+        .quiz-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
+            margin: 0;
+        }
+
+        .option-btn {
+            width: 90px;
+            height: 90px;
+            border: none;
+            border-radius: 50%;
+            font-size: 42px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .option-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .option-btn.o {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .option-btn.o:hover {
+            background: #45a049;
+            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .option-btn.x {
+            background: #f44336;
+            color: white;
+        }
+
+        .option-btn.x:hover {
+            background: #e53935;
+            box-shadow: 0 5px 20px rgba(244, 67, 54, 0.4);
+        }
+
+        .question {
+            font-size: 32px;
+            margin: 15px 0;
+            padding: 10px;
+            min-height: calc(1.4em * 2 + 20px);
+            color: white;
+            text-align: center;
+            width: 100%;
+            transition: all 0.5s ease;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .question.hide {
+            margin: 0;
+            padding: 0;
+            min-height: 0;
+            height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+
+        .welcome-screen {
+            text-align: center;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .welcome-screen h1 {
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .welcome-screen p {
+            color: white;
+            margin-top: 20px;
+            font-size: 18px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .result {
+            text-align: center;
+            font-size: 24px;
+            /* margin-top: 20px; */
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .stars-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            perspective: 1000px;
+            transform-style: preserve-3d;
+            padding: 10px;  /* 添加內邊距避免裁切 */
+        }
+
+        .star {
+            width: 100px;
+            height: 100px;
+            opacity: 0;
+            transform: scale(0.3) rotateY(-180deg) translateZ(-200px);
+            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.6));
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .star img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .star.show {
+            opacity: 1;
+            transform: scale(1) rotateY(0deg) translateZ(0);
+            filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.8));
+            animation: starRotate 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes starRotate {
+            0% {
+                transform: scale(0.3) rotate(-360deg) translateY(30px);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.1) rotate(-90deg) translateY(0);
+                opacity: 0.9;
+            }
+            100% {
+                transform: scale(1) rotate(0deg) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes starShine {
+
+            0%,
+            100% {
+                filter: brightness(1) drop-shadow(0 0 15px rgba(255, 215, 0, 0.6));
+            }
+
+            50% {
+                filter: brightness(1.3) drop-shadow(0 0 25px rgba(255, 215, 0, 0.8));
+            }
+        }
+
+        .score-text {
+            font-size: 36px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin: 20px 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .score-text.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feedback-text {
+            font-size: 28px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin: 20px 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease 0.3s;
+        }
+
+        .feedback-text.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease 0.6s;
+        }
+
+        .action-buttons.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .floating-items {
+            position: fixed;
+            width: 100%;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .floating-item {
+            position: absolute;
+            animation: float 20s infinite linear;
+            opacity: 0.15;
+            will-change: transform, opacity;
+        }
+
+        .floating-item.slow {
+            animation-duration: 25s;
+        }
+
+        .floating-item.fast {
+            animation-duration: 15s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 120vh) rotate(0deg) scale(1);
+                opacity: 0.15;
+            }
+
+            20% {
+                transform: translate(-20px, 80vh) rotate(90deg) scale(1.1);
+                opacity: 0.15;
+            }
+
+            40% {
+                transform: translate(20px, 40vh) rotate(180deg) scale(1.2);
+                opacity: 0.15;
+            }
+
+            60% {
+                transform: translate(-10px, 20vh) rotate(270deg) scale(1.1);
+                opacity: 0.15;
+            }
+
+            80% {
+                transform: translate(10px, -20vh) rotate(360deg) scale(1);
+                opacity: 0.1;
+            }
+
+            100% {
+                transform: translate(0, -40vh) rotate(420deg) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        .start-btn {
+            padding: 15px 40px;
+            font-size: 24px;
+            background: #176847;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+        }
+
+        .start-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(23, 104, 71, 0.4);
+        }
+
+        .start-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .start-btn:active {
+            transform: translateY(1px);
+        }
+
+        .mobile-options {
+            display: none;  /* 預設隱藏手機版按鈕容器 */
+        }
+
+        @media (max-width: 768px) {
+            body {
+                height: calc(100vh - 60px); /* 扣除底部導覽列高度 */
+                overflow: hidden;
+            }
+
+            body.show-results {
+                height: auto;
+                overflow-y: auto;
+            }
+
+            .container {
+                transform: scale(0.95);
+                padding: 10px;
+                padding-bottom: 60px;
+                height: calc(100vh - 60px);
+                min-height: calc(100vh - 60px);
+            }
+
+            body.show-results .container {
+                height: auto;
+                min-height: calc(100vh - 60px);
+            }
+
+            .header-image {
+                margin-top: 1rem;
+                max-width: 400px;
+            }
+
+            .header-image.quiz-mode {
+                max-width: 160px;
+                margin: 8px 0;
+            }
+
+            .quiz-image-container {
+                width: 200px;
+                height: 200px;
+                margin: 8px 0;
+            }
+
+            .question {
+                font-size: 22px;
+                margin: 8px 0;
+                padding: 8px;
+                min-height: calc(1.4em * 2 + 16px);
+            }
+
+            .quiz-content .options {
+                display: none;  /* 隱藏電腦版按鈕 */
+            }
+
+            .option-btn {
+                width: 70px;
+                height: 70px;
+                font-size: 32px;
+            }
+
+            .stars-container {
+                gap: 12px;
+                margin: 15px 0;
+                padding: 8px;  /* 手機版的內邊距 */
+            }
+
+            .star {
+                width: 65px;  /* 稍微再縮小一點 */
+                height: 65px;
+            }
+
+            .quiz-content {
+                flex-direction: column;
+            }
+
+            .mobile-options {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                gap: 20px;
+                width: 100%;
+                margin: 10px 0;
+                order: 3;
+            }
+
+            .welcome-screen {
+                padding: 10px;
+            }
+
+            .welcome-screen h1 {
+                font-size: 28px;
+                margin-bottom: 15px;
+            }
+
+            .welcome-screen p {
+                font-size: 16px;
+                margin-top: 15px;
+            }
+
+            .start-btn {
+                padding: 12px 30px;
+                font-size: 20px;
+                margin: 15px 0;
+            }
+
+            .action-buttons {
+                gap: 15px;
+                margin-top: 20px;
+                margin-bottom: 20px;
+            }
+
+            .reveal-btn,
+            .checklist-btn {
+                padding: 12px 30px;
+                font-size: 20px;
+            }
+
+            .explanation-card {
+                padding: 15px;
+                margin-bottom: 10px;
+            }
+
+            .card-question {
+                font-size: 18px;
+                text-align: left;
+            }
+
+            .card-explanation {
+                font-size: 16px;
+                padding: 5px 0;
+            }
+
+            .modal-content {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .form-group {
+                gap: 3px;
+            }
+
+            .form-group label {
+                font-size: 14px;
+            }
+
+            .form-group input {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            .submit-btn {
+                padding: 10px;
+                font-size: 16px;
+            }
+
+            .score-text {
+                font-size: 28px;  /* 調整分數文字大小 */
+                margin: 15px 0;
+            }
+        }
+
+        .quiz-content,
+        .mobile-options {
+            transition: opacity 0.3s ease;
+        }
+
+        .quiz-content.fade-out,
+        .mobile-options.fade-out {
+            opacity: 0;
+        }
+
+        .explanation-section {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateY(30px);
+            visibility: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            scroll-margin-top: 20px;
+            /* 添加滾動邊距 */
+        }
+
+        .explanation-section.show {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+        }
+
+        .explanation-cards {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 0;
+            overflow: hidden;
+            transition: all 0.5s ease;
+            align-items: stretch;
+        }
+
+        .explanation-cards.show {
+            height: auto;
+            align-items: center;
+        }
+
+        .explanation-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .explanation-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-question {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-explanation {
+            font-size: 18px;
+            color: #666;
+            line-height: 1.5;
+            padding: 10px 0;
+            text-align: left;
+        }
+
+        .reveal-btn {
+            padding: 15px 40px;
+            font-size: 24px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-family: 'BpmfGenSenRounded', Arial, sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reveal-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .reveal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(33, 150, 243, 0.4);
+        }
+
+        .reveal-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .reveal-btn:active {
+            transform: translateY(1px);
+        }
+
+        .checklist-btn {
+            padding: 15px 40px;
+            font-size: 24px;
+            background: #FF9800;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-family: 'BpmfGenSenRounded', Arial, sans-serif;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checklist-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .checklist-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(255, 152, 0, 0.4);
+        }
+
+        .checklist-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .checklist-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .checklist-btn:active {
+            transform: translateY(1px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .checklist-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .form-group input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .submit-btn {
+            padding: 12px;
+            background: #FF9800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background: #F57C00;
+        }
+
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .reveal-btn,
+            .checklist-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        .answer-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+        }
+
+        .answer-indicator svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .answer-indicator.correct svg {
+            fill: none;
+            stroke: #4CAF50;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .answer-indicator.incorrect svg {
+            fill: none;
+            stroke: #f44336;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        @media (max-width: 768px) {
+            .explanation-card {
+                padding: 15px;
+                margin-bottom: 10px;
+                width: calc(100% - 20px);
+                max-width: none;
+            }
+
+            .explanation-section {
+                padding: 0px;
+                padding-top: 10px;
+            }
+
+            .explanation-cards{
+                gap: 0px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="gradient-background"></div>
+    <div class="floating-items">
+        <!-- Floating background items will be added by JavaScript -->
+    </div>
+    <div class="custom-scrollbar">
+        <div class="custom-scrollbar-thumb"></div>
+    </div>
+
+    <div class="container">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" class="header-image" id="headerImage">
+
+        <div class="welcome-screen" id="welcomeScreen">
+            <h1>準備好挑戰了嗎？</h1>
+            <button class="start-btn" onclick="startQuiz()">START !</button>
+            <p id="welcomeText"></p>
+        </div>
+
+        <div class="game-container" id="gameContainer">
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="quiz-layout">
+                <div class="quiz-content">
+                    <div class="options">
+                        <button class="option-btn x" onclick="checkAnswer(false)">X</button>
+                    </div>
+                    <div class="quiz-image-container">
+                        <img src="" alt="題目圖片" class="quiz-image" id="questionImage" style="display: none;">
+                    </div>
+                    <div class="options">
+                        <button class="option-btn o" onclick="checkAnswer(true)">O</button>
+                    </div>
+                </div>
+                <div class="mobile-options">
+                    <button class="option-btn x" onclick="checkAnswer(false)">X</button>
+                    <button class="option-btn o" onclick="checkAnswer(true)">O</button>
+                </div>
+                <div class="question" id="question"></div>
+                <div class="result" id="result"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for checklist -->
+    <div class="modal" id="checklistModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h2 style="margin-bottom: 20px; color: #333; font-family: 'BpmfGenSenRounded', Arial, sans-serif;">
+                領取入學應備物品清單
+            </h2>
+            <form class="checklist-form" onsubmit="submitForm(event)">
+                <div class="form-group">
+                    <label for="parentName">家長姓名</label>
+                    <input type="text" id="parentName" required>
+                </div>
+                <div class="form-group">
+                    <label for="childName">學童姓名</label>
+                    <input type="text" id="childName" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">電子郵件</label>
+                    <input type="email" id="email" required>
+                </div>
+                <button type="submit" class="submit-btn">
+                    <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; margin-right: 8px;">
+                        <path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    確認送出
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestionSet = null;
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        // 防止 iOS Safari 的雙指縮放
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('touchmove', function(e) {
+            // 在答題階段禁止滾動
+            if (!document.body.classList.contains('show-results')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // 從 URL 獲取題組 ID
+        function getQuestionSetId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('set') || 'entrance'; // 預設使用 entrance
+        }
+
+        // 初始化頁面
+        async function initializePage() {
+            const setId = getQuestionSetId();
+            try {
+                const response = await fetch(`https://rainbowstudent.wentzao.com/get_challenge_data?challenge=${setId}`);
+                if (!response.ok) {
+                    throw new Error('題組載入失敗');
+                }
+                const data = await response.json();
+                const challengeData = data.challenge_data;
+                
+                // 更新網頁標題
+                document.title = `文藻美語 - ${challengeData.title}`;
+                // 更新標題圖片
+                document.getElementById('headerImage').src = data.image_url;
+                // 更新歡迎文字
+                document.getElementById('welcomeText').textContent = challengeData.welcomeText || '歡迎來到文藻美語的挑戰題！';
+                // 更新背景顏色
+                if (challengeData.gradientColorStart && challengeData.gradientColorEnd) {
+                    document.querySelector('.gradient-background').style.background = 
+                        `linear-gradient(135deg, ${challengeData.gradientColorStart}, ${challengeData.gradientColorEnd})`;
+                }
+                // 儲存題目數據供後續使用
+                currentQuestionSet = challengeData;
+            } catch (error) {
+                console.error('Error loading initial data:', error);
+            }
+        }
+
+        // 載入題組
+        async function loadQuestionSet() {
+            const setId = getQuestionSetId();
+            try {
+                const response = await fetch(`https://rainbowstudent.wentzao.com/get_challenge_data?challenge=${setId}`);
+                if (!response.ok) {
+                    throw new Error('題組載入失敗');
+                }
+                const data = await response.json();
+                const challengeData = data.challenge_data;
+                currentQuestionSet = challengeData;
+                currentQuestions = challengeData.questions;
+            } catch (error) {
+                console.error('Error loading questions:', error);
+                alert('題組載入失敗，請確認網址是否正確');
+            }
+        }
+
+        // 在頁面載入時初始化
+        window.addEventListener('DOMContentLoaded', initializePage);
+
+        // 開始測驗
+        async function startQuiz() {
+            await loadQuestionSet();
+            if (!currentQuestions || currentQuestions.length === 0) {
+                return;
+            }
+
+            // 預載入第一題圖片
+            if (currentQuestions[0].image) {
+                const preloadImage = new Image();
+                preloadImage.src = currentQuestions[0].image;
+            }
+
+            document.getElementById('headerImage').classList.add('quiz-mode');
+            document.getElementById('welcomeScreen').style.display = 'none';
+
+            const gameContainer = document.getElementById('gameContainer');
+            gameContainer.style.display = 'block';
+            setTimeout(() => {
+                gameContainer.classList.add('show');
+            }, 50);
+
+            currentQuestionIndex = 0;
+            score = 0;
+            updateQuestion();
+
+            // Start floating items animation
+            setInterval(createFloatingItem, 3000);
+            createFloatingItem();
+        }
+
+        // Add floating background items
+        const floatingItems = document.querySelector('.floating-items');
+        const items = ['📚', '✏️', '🎨', '🔢', '📐', '✂️', '🎯', '🎲', '🎮', '🧩', '🔍', '💡', '🌟', '⭐', '✨'];
+
+        function createFloatingItem() {
+            const item = document.createElement('div');
+            item.className = `floating-item ${Math.random() > 0.6 ? 'slow' : Math.random() > 0.3 ? '' : 'fast'}`;
+            item.textContent = items[Math.floor(Math.random() * items.length)];
+            item.style.left = `${Math.random() * 100}%`;
+            item.style.fontSize = `${Math.random() * 20 + 20}px`;
+
+            // Remove the element when animation ends
+            item.addEventListener('animationend', () => {
+                item.remove();
+            });
+
+            floatingItems.appendChild(item);
+        }
+
+        function updateQuestion() {
+            const progressPercent = (currentQuestionIndex / currentQuestions.length) * 100;
+            document.getElementById('progressBar').style.width = `${progressPercent}%`;
+
+            if (currentQuestionIndex < currentQuestions.length) {
+                const question = currentQuestions[currentQuestionIndex];
+                const questionImage = document.getElementById('questionImage');
+
+                // 先設置新圖片，然後更新問題文字
+                questionImage.src = question.image;
+                questionImage.style.display = 'block';
+                document.getElementById('question').textContent = question.question;
+
+                document.getElementById('result').textContent = '';
+            } else {
+                showFinalResult();
+            }
+        }
+
+        function checkAnswer(answer) {
+            const question = currentQuestions[currentQuestionIndex];
+            const isCorrect = answer === question.correctAnswer;
+
+            if (isCorrect) {
+                score++;
+            }
+
+            // 預先載入下一題的圖片
+            if (currentQuestionIndex + 1 < currentQuestions.length) {
+                const nextQuestion = currentQuestions[currentQuestionIndex + 1];
+                const preloadImage = new Image();
+                preloadImage.src = nextQuestion.image;
+            }
+
+            // 淡出當前題目內容
+            const quizContent = document.querySelector('.quiz-content');
+            const mobileOptions = document.querySelector('.mobile-options');
+            quizContent.classList.add('fade-out');
+            mobileOptions.classList.add('fade-out');
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                updateQuestion();
+                // 淡入新題目內容
+                quizContent.classList.remove('fade-out');
+                mobileOptions.classList.remove('fade-out');
+            }, 300);
+        }
+
+        function showFinalResult() {
+            const percentage = (score / currentQuestions.length) * 100;
+            document.body.classList.add('show-results');
+
+            // 先隱藏問題容器
+            const questionElement = document.getElementById('question');
+            questionElement.classList.add('hide');
+            setTimeout(() => {
+                questionElement.textContent = '';
+            }, 500);
+
+            // 確保標題圖片位置不變
+            const headerImage = document.getElementById('headerImage');
+            headerImage.style.position = 'relative';
+            headerImage.style.zIndex = '10';
+
+            let explanationHTML = '<div class="explanation-section"><div class="explanation-cards">';
+            currentQuestions.forEach((q, index) => {
+                const correctSvg = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5"/></svg>`;
+                const incorrectSvg = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6 M9 9l6 6"/></svg>`;
+
+                explanationHTML += `
+                    <div class="explanation-card">
+                        <div class="card-question">
+                            <span class="answer-indicator ${q.correctAnswer ? 'correct' : 'incorrect'}">
+                                ${q.correctAnswer ? correctSvg : incorrectSvg}
+                            </span>
+                            ${q.question}
+                        </div>
+                        <div class="card-explanation">
+                            ${q.explanation}
+                        </div>
+                    </div>
+                `;
+            });
+            explanationHTML += `
+                <button class="start-btn" onclick="location.reload()" style="width: 200px;">重新開始</button>
+            </div></div>`;
+
+            // 計算星星數量
+            const starCount = Math.ceil((percentage / 100) * 3);
+
+            // 獲取回饋文字
+            const feedback = getFeedbackText(percentage);
+
+            // 隱藏問題容器
+            document.getElementById('result').innerHTML = `
+                <div class="stars-container">
+                    ${Array(3).fill().map((_, i) => `
+                        <div class="star${i < starCount ? ' show' : ''}" data-index="${i}">
+                            <img src="star.png" alt="Star ${i + 1}">
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="score-text">
+                    得分：${score}/${currentQuestions.length}
+                </div>
+                <div class="feedback-text">
+                    ${feedback}
+                </div>
+                <div class="action-buttons">
+                    <button class="reveal-btn" onclick="revealExplanations()">點我看詳解</button>
+                    <button class="checklist-btn" onclick="showChecklistModal()">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"></path>
+                            <rect x="9" y="3" width="6" height="4" rx="2"></rect>
+                            <path d="M9 14l2 2 4-4"></path>
+                        </svg>
+                        領取應備物品清單
+                    </button>
+                </div>
+                ${explanationHTML}
+            `;
+
+            // 動畫效果
+            setTimeout(() => {
+                document.querySelectorAll('.star').forEach((star, index) => {
+                    setTimeout(() => {
+                        if (index < starCount) {
+                            star.classList.add('show');
+                        }
+                    }, index * 300); // 增加間隔時間讓3D效果更明顯
+                });
+
+                setTimeout(() => {
+                    document.querySelector('.score-text').classList.add('show');
+                }, 1000);
+
+                setTimeout(() => {
+                    document.querySelector('.feedback-text').classList.add('show');
+                }, 1300);
+
+                setTimeout(() => {
+                    document.querySelector('.action-buttons').classList.add('show');
+                }, 1600);
+            }, 100);
+
+            document.querySelector('.quiz-content').style.display = 'none';
+            document.querySelector('.mobile-options').style.display = 'none';
+            document.querySelector('.progress').style.display = 'none';
+        }
+
+        function getFeedbackText(percentage) {
+            // 根據分數百分比從高到低尋找對應的回饋文字
+            const feedback = currentQuestionSet.feedbacks.find(fb => percentage >= fb.minPercentage);
+            return feedback ? feedback.text : "謝謝參與測驗！";
+        }
+
+        function revealExplanations() {
+            const explanationSection = document.querySelector('.explanation-section');
+            explanationSection.classList.add('show');
+            document.querySelector('.explanation-cards').classList.add('show');
+
+            // 滾動到詳解區域
+            explanationSection.scrollIntoView({ behavior: 'smooth' });
+
+            // 等待內容展開動畫完成後再更新滾動條
+            setTimeout(updateScrollbar, 500);
+        }
+
+        function showChecklistModal() {
+            document.getElementById('checklistModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('checklistModal').classList.remove('show');
+        }
+
+        function submitForm(event) {
+            event.preventDefault();
+            // 這裡可以加入表單提交的邏輯
+            alert('感謝您的登記！清單將寄送至您的信箱。');
+            closeModal();
+        }
+
+        // 點擊modal外部時關閉
+        window.onclick = function (event) {
+            const modal = document.getElementById('checklistModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // Update URL when changing question sets
+        function changeQuestionSet(setId) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('set', setId);
+            window.history.pushState({}, '', url);
+            location.reload();
+        }
+
+        // 添加自定義滾動條功能
+        function updateScrollbar() {
+            const scrollbar = document.querySelector('.custom-scrollbar');
+            const thumb = document.querySelector('.custom-scrollbar-thumb');
+            const container = document.querySelector('.container');
+
+            if (document.body.classList.contains('show-results')) {
+                // 只有當內容高度超過視窗高度時才顯示滾動條
+                const contentHeight = container.scrollHeight;
+                const windowHeight = window.innerHeight;
+
+                if (contentHeight > windowHeight) {
+                    const scrollPercent = window.scrollY / (contentHeight - windowHeight);
+                    const thumbHeight = Math.max(40, windowHeight * (windowHeight / contentHeight));
+
+                    thumb.style.height = `${thumbHeight}px`;
+                    thumb.style.top = `${scrollPercent * (windowHeight - thumbHeight)}px`;
+                    scrollbar.classList.add('show');
+                } else {
+                    scrollbar.classList.remove('show');
+                }
+            } else {
+                scrollbar.classList.remove('show');
+            }
+        }
+
+        // 添加滾動條拖曳功能
+        let isDragging = false;
+        let startY = 0;
+        let startScroll = 0;
+
+        document.querySelector('.custom-scrollbar-thumb').addEventListener('mousedown', function (e) {
+            isDragging = true;
+            startY = e.clientY;
+            startScroll = window.scrollY;
+            document.body.style.userSelect = 'none'; // 防止拖曳時選中文字
+        });
+
+        document.addEventListener('mousemove', function (e) {
+            if (!isDragging) return;
+
+            const container = document.querySelector('.container');
+            const deltaY = e.clientY - startY;
+            const windowHeight = window.innerHeight;
+            const contentHeight = container.scrollHeight;
+
+            const scrollRatio = (contentHeight - windowHeight) / (windowHeight - 40); // 40 是最小滾動條高度
+            const newScroll = startScroll + (deltaY * scrollRatio);
+
+            window.scrollTo(0, newScroll);
+            e.preventDefault();
+        });
+
+        document.addEventListener('mouseup', function () {
+            isDragging = false;
+            document.body.style.userSelect = '';
+        });
+
+        // 點擊滾動條背景時，直接跳轉到對應位置
+        document.querySelector('.custom-scrollbar').addEventListener('click', function (e) {
+            if (e.target === this) {
+                const container = document.querySelector('.container');
+                const windowHeight = window.innerHeight;
+                const contentHeight = container.scrollHeight;
+                const clickRatio = e.clientY / windowHeight;
+
+                window.scrollTo(0, (contentHeight - windowHeight) * clickRatio);
+            }
+        });
+
+        // 監聽滾動和調整視窗大小事件
+        window.addEventListener('scroll', updateScrollbar);
+        window.addEventListener('resize', updateScrollbar);
+
+        // 在顯示結果時初始化滾動條
+        const originalShowFinalResult = showFinalResult;
+        showFinalResult = function () {
+            originalShowFinalResult.apply(this, arguments);
+            // 等待內容渲染完成後再初始化滾動條
+            setTimeout(updateScrollbar, 100);
+        };
+    </script>
+</body>
+
+</html>

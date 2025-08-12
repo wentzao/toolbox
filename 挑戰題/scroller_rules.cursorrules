@@ -1,0 +1,199 @@
+# 自定義滾動條實作規則
+
+## 1. 基礎設置
+
+### 1.1 隱藏原生滾動條
+```css
+* {
+    scrollbar-width: none;        /* Firefox */
+    -ms-overflow-style: none;     /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+    width: 0;                     /* Chrome, Safari, Opera */
+    display: none;
+}
+```
+
+### 1.2 防止滾動條跳動
+```css
+html {
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+}
+
+body {
+    margin-right: calc(100vw - 100%);  /* 防止滾動條出現時的跳動 */
+}
+```
+
+## 2. 自定義滾動條結構
+
+### 2.1 HTML 結構
+```html
+<div class="custom-scrollbar">
+    <div class="custom-scrollbar-thumb"></div>
+</div>
+```
+
+### 2.2 基本樣式
+```css
+.custom-scrollbar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 100vh;
+    z-index: 1001;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.custom-scrollbar.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.custom-scrollbar-thumb {
+    position: absolute;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.custom-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+```
+
+## 3. 功能實作規則
+
+### 3.1 滾動條顯示邏輯
+- 只在內容高度超過視窗高度時顯示
+- 在內容展開動畫完成後重新計算
+- 滾動條長度根據內容比例動態計算
+
+### 3.2 滾動條更新函數
+```javascript
+function updateScrollbar() {
+    const scrollbar = document.querySelector('.custom-scrollbar');
+    const thumb = document.querySelector('.custom-scrollbar-thumb');
+    const container = document.querySelector('.container');
+    
+    if (document.body.classList.contains('show-results')) {
+        const contentHeight = container.scrollHeight;
+        const windowHeight = window.innerHeight;
+        
+        if (contentHeight > windowHeight) {
+            const scrollPercent = window.scrollY / (contentHeight - windowHeight);
+            const thumbHeight = Math.max(40, windowHeight * (windowHeight / contentHeight));
+            
+            thumb.style.height = `${thumbHeight}px`;
+            thumb.style.top = `${scrollPercent * (windowHeight - thumbHeight)}px`;
+            scrollbar.classList.add('show');
+        } else {
+            scrollbar.classList.remove('show');
+        }
+    } else {
+        scrollbar.classList.remove('show');
+    }
+}
+```
+
+### 3.3 拖曳功能實作
+```javascript
+let isDragging = false;
+let startY = 0;
+let startScroll = 0;
+
+// 開始拖曳
+document.querySelector('.custom-scrollbar-thumb').addEventListener('mousedown', function(e) {
+    isDragging = true;
+    startY = e.clientY;
+    startScroll = window.scrollY;
+    document.body.style.userSelect = 'none';
+});
+
+// 拖曳過程
+document.addEventListener('mousemove', function(e) {
+    if (!isDragging) return;
+    
+    const container = document.querySelector('.container');
+    const deltaY = e.clientY - startY;
+    const windowHeight = window.innerHeight;
+    const contentHeight = container.scrollHeight;
+    
+    const scrollRatio = (contentHeight - windowHeight) / (windowHeight - 40);
+    const newScroll = startScroll + (deltaY * scrollRatio);
+    
+    window.scrollTo(0, newScroll);
+    e.preventDefault();
+});
+
+// 結束拖曳
+document.addEventListener('mouseup', function() {
+    isDragging = false;
+    document.body.style.userSelect = '';
+});
+```
+
+### 3.4 點擊跳轉功能
+```javascript
+document.querySelector('.custom-scrollbar').addEventListener('click', function(e) {
+    if (e.target === this) {
+        const container = document.querySelector('.container');
+        const windowHeight = window.innerHeight;
+        const contentHeight = container.scrollHeight;
+        const clickRatio = e.clientY / windowHeight;
+        
+        window.scrollTo(0, (contentHeight - windowHeight) * clickRatio);
+    }
+});
+```
+
+## 4. 事件監聽和初始化
+
+### 4.1 基本事件監聽
+```javascript
+window.addEventListener('scroll', updateScrollbar);
+window.addEventListener('resize', updateScrollbar);
+```
+
+### 4.2 特殊時機更新
+```javascript
+// 詳解展開時更新
+function revealExplanations() {
+    document.querySelector('.explanation-cards').classList.add('show');
+    setTimeout(updateScrollbar, 500);  // 等待動畫完成
+}
+
+// 顯示結果時更新
+const originalShowFinalResult = showFinalResult;
+showFinalResult = function() {
+    originalShowFinalResult.apply(this, arguments);
+    setTimeout(updateScrollbar, 100);  // 等待渲染完成
+}
+```
+
+## 5. 注意事項
+
+1. 背景層次順序：
+   - 漸層背景 (z-index: -2)
+   - 浮動元素 (z-index: -1)
+   - 內容層 (z-index: 1)
+   - 滾動條 (z-index: 1001)
+
+2. 效能優化：
+   - 使用 transform 和 opacity 進行動畫
+   - 使用 requestAnimationFrame 處理滾動事件
+   - 避免在滾動時進行複雜計算
+
+3. 互動優化：
+   - 滑鼠懸浮效果提供視覺反饋
+   - 拖曳時禁用文字選擇
+   - 最小滾動條高度限制為 40px 
