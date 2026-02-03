@@ -83,7 +83,7 @@ async function initializePage() {
         if (challengeData.useZhuyinFont) {
             document.body.style.fontFamily = "'BpmfGenSenRounded', Arial, sans-serif";
         } else {
-            document.body.style.fontFamily = "'ZihaiKaiTi', Arial, sans-serif";
+            document.body.style.fontFamily = "'Noto Sans TC', 'Heiti TC', 'Microsoft JhengHei', sans-serif";
         }
 
     } catch (error) {
