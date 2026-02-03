@@ -316,7 +316,7 @@ body.show-results .header-image.quiz-mode {
     padding: 10px;
     min-height: calc(1.4em * 2 + 20px);
     color: white;
-    text-align: center;
+    text-align: left;
     width: 100%;
     transition: all 0.5s ease;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
