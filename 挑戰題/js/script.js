@@ -203,85 +203,89 @@ function proceedToNextQuestion() {
 }
 
 function showInstantExplanationInline(isCorrect, explanation, callback) {
-    const quizContent = document.querySelector('.quiz-content');
-    const mobileOptions = document.querySelector('.mobile-options');
-    const questionImage = document.getElementById('questionImage');
     const question = currentQuestions[currentQuestionIndex];
-
-    // Fade the O/X buttons instead of hiding
-    mobileOptions.style.opacity = '0.3';
-    mobileOptions.style.pointerEvents = 'none';
 
     // Get the correct answer text (O or X)
     const correctAnswerText = question.correctAnswer ? 'O' : 'X';
     const color = question.correctAnswer ? "#4CAF50" : "#F44336";
-    const bgColor = question.correctAnswer ? "#E8F5E9" : "#FFEBEE";
 
-    // Create inline explanation element to replace the image
-    const explanationDiv = document.createElement('div');
-    explanationDiv.className = 'inline-explanation';
-    explanationDiv.style.cssText = `
-        padding: 20px;
-        background: ${bgColor};
-        border-radius: 15px;
-        border-left: 5px solid ${color};
-        text-align: center;
-        opacity: 0;
-        transform: scale(0.95);
-        transition: all 0.4s ease;
-        min-height: 150px;
+    // Create modal overlay with very high z-index
+    const overlay = document.createElement('div');
+    overlay.className = 'instant-explanation-modal';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        width: 100vw; height: 100vh;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 99999;
         display: flex;
         flex-direction: column;
         justify-content: center;
+        align-items: center;
+        padding: 20px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
     `;
 
-    explanationDiv.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
-            <span style="font-size: 40px; font-weight: bold; color: ${color};">${correctAnswerText}</span>
-            <h3 style="color: ${color}; margin: 0; font-size: 22px;">答案是 ${correctAnswerText}</h3>
-        </div>
-        <div style="text-align: left; background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; max-height: 30vh; overflow-y: auto;">
-            <div style="font-size: 15px; line-height: 1.6; color: #333;">${explanation || "沒有詳解說明。"}</div>
-        </div>
-        <button class="next-btn" style="
-            background: ${color}; 
-            color: white; 
-            border: none; 
-            padding: 12px 30px; 
-            border-radius: 50px; 
-            font-size: 16px; 
-            cursor: pointer; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            transition: transform 0.2s;
-            align-self: center;
+    overlay.innerHTML = `
+        <div class="explanation-modal-content" style="
+            background: white;
+            color: #333;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         ">
-            ${currentQuestionIndex + 1 < currentQuestions.length ? '下一題' : '看結果'} →
-        </button>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 20px;">
+                <span style="font-size: 60px; font-weight: bold; color: ${color}; text-shadow: 0 0 20px ${color}40;">${correctAnswerText}</span>
+                <h2 style="color: ${color}; margin: 0; font-size: 28px;">答案是 ${correctAnswerText}</h2>
+            </div>
+            <div style="text-align: left; background: #f5f5f5; padding: 15px; border-radius: 10px; margin-bottom: 20px; max-height: 40vh; overflow-y: auto;">
+                <h4 style="margin: 0 0 10px 0; color: #666; font-size: 14px;">詳解：</h4>
+                <div style="font-size: 16px; line-height: 1.6;">${explanation || "沒有詳解說明。"}</div>
+            </div>
+            <button class="next-btn" style="
+                background: ${color}; 
+                color: white; 
+                border: none; 
+                padding: 14px 40px; 
+                border-radius: 50px; 
+                font-size: 18px; 
+                cursor: pointer; 
+                box-shadow: 0 6px 20px ${color}60;
+                transition: transform 0.2s, box-shadow 0.2s;
+            ">
+                ${currentQuestionIndex + 1 < currentQuestions.length ? '下一題' : '看結果'} →
+            </button>
+        </div>
     `;
 
-    // Hide the image and insert the explanation in its place
-    questionImage.style.display = 'none';
-    questionImage.parentNode.insertBefore(explanationDiv, questionImage.nextSibling);
+    document.body.appendChild(overlay);
 
     // Animate in
     requestAnimationFrame(() => {
-        explanationDiv.style.opacity = '1';
-        explanationDiv.style.transform = 'scale(1)';
+        overlay.style.opacity = '1';
+        overlay.querySelector('.explanation-modal-content').style.transform = 'scale(1)';
     });
 
-    const nextBtn = explanationDiv.querySelector('.next-btn');
-    nextBtn.onmouseover = () => nextBtn.style.transform = 'scale(1.05)';
-    nextBtn.onmouseout = () => nextBtn.style.transform = 'scale(1)';
+    const nextBtn = overlay.querySelector('.next-btn');
+    nextBtn.onmouseover = () => {
+        nextBtn.style.transform = 'scale(1.05)';
+        nextBtn.style.boxShadow = `0 8px 25px ${color}80`;
+    };
+    nextBtn.onmouseout = () => {
+        nextBtn.style.transform = 'scale(1)';
+        nextBtn.style.boxShadow = `0 6px 20px ${color}60`;
+    };
     nextBtn.onclick = () => {
-        explanationDiv.style.opacity = '0';
-        explanationDiv.style.transform = 'scale(0.95)';
+        overlay.style.opacity = '0';
+        overlay.querySelector('.explanation-modal-content').style.transform = 'scale(0.8)';
         setTimeout(() => {
-            explanationDiv.remove();
-            // Restore image for next question
-            questionImage.style.display = 'block';
-            // Restore buttons
-            mobileOptions.style.opacity = '1';
-            mobileOptions.style.pointerEvents = 'auto';
+            overlay.remove();
             callback();
         }, 300);
     };
