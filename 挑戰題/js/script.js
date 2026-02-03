@@ -2,6 +2,7 @@ let currentQuestionSet = null;
 let currentQuestions = [];
 let currentQuestionIndex = 0;
 let score = 0;
+let nextImageLoadPromise = null;
 
 // LIFF Configuration
 const LIFF_ID = '1660786685-eGqvIyOV';
@@ -204,6 +205,24 @@ function createFloatingItem() {
     floatingItems.appendChild(item);
 }
 
+function preloadNextImage(index) {
+    if (index < currentQuestions.length) {
+        const nextQ = currentQuestions[index];
+        if (nextQ.image) {
+            nextImageLoadPromise = new Promise((resolve) => {
+                const img = new Image();
+                img.onload = resolve;
+                img.onerror = resolve;
+                img.src = nextQ.image;
+            });
+        } else {
+            nextImageLoadPromise = Promise.resolve();
+        }
+    } else {
+        nextImageLoadPromise = Promise.resolve();
+    }
+}
+
 function updateQuestion() {
     const progressPercent = (currentQuestionIndex / currentQuestions.length) * 100;
     document.getElementById('progressBar').style.width = `${progressPercent}%`;
@@ -218,6 +237,9 @@ function updateQuestion() {
         document.getElementById('question').textContent = question.question;
 
         document.getElementById('result').textContent = '';
+
+        // 預載入下一題圖片
+        preloadNextImage(currentQuestionIndex + 1);
     } else {
         showFinalResult();
     }
@@ -242,23 +264,8 @@ function checkAnswer(answer) {
 }
 
 function proceedToNextQuestion() {
-    // 預先載入下一題的圖片並等待載入完成
-    const nextIndex = currentQuestionIndex + 1;
-    let imageLoadPromise = Promise.resolve();
-
-    if (nextIndex < currentQuestions.length) {
-        const nextQuestion = currentQuestions[nextIndex];
-        if (nextQuestion.image) {
-            imageLoadPromise = new Promise((resolve) => {
-                const img = new Image();
-                img.onload = resolve;
-                img.onerror = resolve; // 即使失敗也要繼續
-                img.src = nextQuestion.image;
-                // 設定超時防止卡住
-                setTimeout(resolve, 3000);
-            });
-        }
-    }
+    // 使用全域變數中的預載入 Promise
+    let imageLoadPromise = nextImageLoadPromise || Promise.resolve();
 
     // 淡出當前題目內容
     const quizContent = document.querySelector('.quiz-content');
