@@ -3,6 +3,10 @@ let currentQuestions = [];
 let currentQuestionIndex = 0;
 let score = 0;
 
+// LIFF Configuration
+const LIFF_ID = '1660786685-eGqvIyOV';
+let liffInitialized = false;
+
 // 防止 iOS Safari 的雙指縮放
 document.addEventListener('gesturestart', function (e) {
     e.preventDefault();
@@ -15,10 +19,26 @@ document.addEventListener('touchmove', function (e) {
     }
 }, { passive: false });
 
-// 從 URL 獲取題組 ID
+// 從 URL 獲取題組 ID (支援一般 URL 和 LIFF URL)
 function getQuestionSetId() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('set') || 'entrance'; // 預設使用 entrance
+    // First try current URL params
+    let urlParams = new URLSearchParams(window.location.search);
+    let setId = urlParams.get('set');
+
+    // If running in LIFF, also check LIFF URL
+    if (!setId && typeof liff !== 'undefined' && liffInitialized) {
+        try {
+            const liffUrl = liff.getDecodedIDToken()?.liff?.url || '';
+            if (liffUrl) {
+                const liffParams = new URLSearchParams(new URL(liffUrl).search);
+                setId = liffParams.get('set');
+            }
+        } catch (e) {
+            console.log('LIFF URL parsing error:', e);
+        }
+    }
+
+    return setId || 'entrance'; // 預設使用 entrance
 }
 
 // 初始化頁面
@@ -89,8 +109,27 @@ async function loadQuestionSet() {
     }
 }
 
-// 在頁面載入時初始化
-window.addEventListener('DOMContentLoaded', initializePage);
+// 在頁面載入時初始化 (含 LIFF)
+window.addEventListener('DOMContentLoaded', async () => {
+    // 嘗試初始化 LIFF
+    if (typeof liff !== 'undefined') {
+        try {
+            await liff.init({ liffId: LIFF_ID });
+            liffInitialized = true;
+            console.log('LIFF initialized successfully');
+
+            // 如果在外部瀏覽器開啟，可在此處理
+            if (liff.isInClient()) {
+                console.log('Running in LINE app');
+            }
+        } catch (error) {
+            console.log('LIFF initialization failed or not in LINE:', error);
+        }
+    }
+
+    // 繼續初始化頁面
+    await initializePage();
+});
 
 // 開始測驗
 async function startQuiz() {
