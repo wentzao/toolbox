@@ -1,6 +1,13 @@
+/* 注音字體 */
 @font-face {
     font-family: 'BpmfGenSenRounded';
     src: url('../fonts/BpmfGenSenRounded-R.ttf') format('truetype');
+}
+
+/* 一般字體 (非注音) */
+@font-face {
+    font-family: 'ZihaiKaiTi';
+    src: url('../fonts/字嗨注音標楷.ttf') format('truetype');
 }
 
 * {
@@ -22,7 +29,8 @@
 html {
     overflow-y: scroll;
     scrollbar-gutter: stable;
-    touch-action: manipulation; /* 防止瀏覽器預設的縮放行為 */
+    touch-action: manipulation;
+    /* 防止瀏覽器預設的縮放行為 */
 }
 
 body {
@@ -38,13 +46,17 @@ body {
     margin-right: calc(100vw - 100%);
     /* 防止滾動條出現時的跳動 */
     height: 100vh;
-    -webkit-text-size-adjust: 100%; /* 禁止iOS調整文字大小 */
-    -webkit-touch-callout: none; /* 禁止長按呼出選單 */
-    -webkit-user-select: none; /* 禁止選取文字 */
+    -webkit-text-size-adjust: 100%;
+    /* 禁止iOS調整文字大小 */
+    -webkit-touch-callout: none;
+    /* 禁止長按呼出選單 */
+    -webkit-user-select: none;
+    /* 禁止選取文字 */
     user-select: none;
 }
 
 @supports (-webkit-touch-callout: none) {
+
     /* iOS 裝置特定樣式 */
     body {
         height: -webkit-fill-available;
@@ -69,12 +81,12 @@ body {
         body {
             height: calc(100vh - 60px - env(safe-area-inset-bottom));
         }
-        
+
         .container {
             height: calc(100vh - 60px - env(safe-area-inset-bottom));
             min-height: calc(100vh - 60px - env(safe-area-inset-bottom));
         }
-        
+
         body.show-results .container {
             min-height: calc(100vh - 60px - env(safe-area-inset-bottom));
         }
@@ -160,13 +172,16 @@ body.show-results .container {
     margin-bottom: 20px;
     transition: all 0.8s ease;
     margin-top: 1rem;
-    position: relative; /* 設置為相對定位 */
-    z-index: 10; /* 確保在最上層 */
+    position: relative;
+    /* 設置為相對定位 */
+    z-index: 10;
+    /* 確保在最上層 */
 }
 
 .header-image.quiz-mode {
     max-width: 250px;
-    margin: 0; /* 移除邊距 */
+    margin: 0;
+    /* 移除邊距 */
     transform: translateY(0);
 }
 
@@ -219,7 +234,8 @@ body.show-results .header-image.quiz-mode {
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    margin-bottom: 0; /* 移除底部邊距 */
+    margin-bottom: 0;
+    /* 移除底部邊距 */
 }
 
 .quiz-content {
@@ -352,7 +368,8 @@ body.show-results .header-image.quiz-mode {
     margin: 30px 0;
     perspective: 1000px;
     transform-style: preserve-3d;
-    padding: 10px;  /* 添加內邊距避免裁切 */
+    padding: 10px;
+    /* 添加內邊距避免裁切 */
 }
 
 .star {
@@ -387,10 +404,12 @@ body.show-results .header-image.quiz-mode {
         transform: scale(0.3) rotate(-360deg) translateY(30px);
         opacity: 0;
     }
+
     70% {
         transform: scale(1.1) rotate(-90deg) translateY(0);
         opacity: 0.9;
     }
+
     100% {
         transform: scale(1) rotate(0deg) translateY(0);
         opacity: 1;
@@ -555,12 +574,14 @@ body.show-results .header-image.quiz-mode {
 }
 
 .mobile-options {
-    display: none;  /* 預設隱藏手機版按鈕容器 */
+    display: none;
+    /* 預設隱藏手機版按鈕容器 */
 }
 
 @media (max-width: 768px) {
     body {
-        height: calc(100vh - 60px); /* 扣除底部導覽列高度 */
+        height: calc(100vh - 60px);
+        /* 扣除底部導覽列高度 */
         overflow: hidden;
     }
 
@@ -606,7 +627,8 @@ body.show-results .header-image.quiz-mode {
     }
 
     .quiz-content .options {
-        display: none;  /* 隱藏電腦版按鈕 */
+        display: none;
+        /* 隱藏電腦版按鈕 */
     }
 
     .option-btn {
@@ -618,11 +640,13 @@ body.show-results .header-image.quiz-mode {
     .stars-container {
         gap: 12px;
         margin: 15px 0;
-        padding: 8px;  /* 手機版的內邊距 */
+        padding: 8px;
+        /* 手機版的內邊距 */
     }
 
     .star {
-        width: 65px;  /* 稍微再縮小一點 */
+        width: 65px;
+        /* 稍微再縮小一點 */
         height: 65px;
     }
 
@@ -711,7 +735,8 @@ body.show-results .header-image.quiz-mode {
     }
 
     .score-text {
-        font-size: 28px;  /* 調整分數文字大小 */
+        font-size: 28px;
+        /* 調整分數文字大小 */
         margin: 15px 0;
     }
 }
@@ -1030,7 +1055,7 @@ body.show-results .header-image.quiz-mode {
         padding-top: 10px;
     }
 
-    .explanation-cards{
+    .explanation-cards {
         gap: 0px;
     }
 }

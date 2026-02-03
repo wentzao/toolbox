@@ -63,7 +63,7 @@ async function initializePage() {
         if (challengeData.useZhuyinFont) {
             document.body.style.fontFamily = "'BpmfGenSenRounded', Arial, sans-serif";
         } else {
-            document.body.style.fontFamily = "'Noto Sans TC', Arial, sans-serif";
+            document.body.style.fontFamily = "'ZihaiKaiTi', Arial, sans-serif";
         }
 
     } catch (error) {
@@ -220,9 +220,9 @@ function showInstantExplanationInline(isCorrect, explanation, callback) {
         z-index: 99999;
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: flex-start;
         align-items: center;
-        padding: 20px;
+        padding: 80px 20px 20px 20px;
         opacity: 0;
         transition: opacity 0.3s ease;
     `;
@@ -347,7 +347,7 @@ function showFinalResult() {
         <div class="stars-container">
             ${Array(3).fill().map((_, i) => `
                 <div class="star${i < starCount ? ' show' : ''}" data-index="${i}">
-                    <img src="assets/star.png" alt="Star ${i + 1}">
+                    <img src="star.png" alt="Star ${i + 1}">
                 </div>
             `).join('')}
         </div>
