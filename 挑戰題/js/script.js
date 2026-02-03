@@ -69,14 +69,22 @@ async function initializePage() {
             // [Custom Feature] Set Question Text Shadow to use Gradient End Color
             const questionEl = document.getElementById('question');
             if (questionEl) {
-                // Remove default black shadow and use the theme color
-                // We use a darker version or just the color itself? User asked for "End color".
-                // Adding some opacity or just solid? Text shadow usually handles solid colors fine.
-                // Let's use the color directly as requested.
-                // To make it look like a shadow, maybe we assume the user picks a color that contrasts well?
-                // Or maybe they want a glow.
-                // Using the exact CSS from before but substituting the color.
-                questionEl.style.textShadow = `2px 2px 6px ${challengeData.gradientColorEnd}, 0 0 20px ${challengeData.gradientColorEnd}`;
+                // Helper to adjust brightness
+                const adjustBrightness = (col, amt) => {
+                    col = col.replace(/^#/, '');
+                    if (col.length === 3) col = col[0] + col[0] + col[1] + col[1] + col[2] + col[2];
+                    let r = parseInt(col.substring(0, 2), 16);
+                    let g = parseInt(col.substring(2, 4), 16);
+                    let b = parseInt(col.substring(4, 6), 16);
+                    r = Math.max(0, Math.min(255, r + amt));
+                    g = Math.max(0, Math.min(255, g + amt));
+                    b = Math.max(0, Math.min(255, b + amt));
+                    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+                };
+
+                const darkColor = adjustBrightness(challengeData.gradientColorEnd, -80); // Darken by 80
+                // Wider spread for foggy effect
+                questionEl.style.textShadow = `2px 2px 10px ${darkColor}, 0 0 60px ${challengeData.gradientColorEnd}`;
             }
         }
 
@@ -234,11 +242,22 @@ function checkAnswer(answer) {
 }
 
 function proceedToNextQuestion() {
-    // 預先載入下一題的圖片
-    if (currentQuestionIndex + 1 < currentQuestions.length) {
-        const nextQuestion = currentQuestions[currentQuestionIndex + 1];
-        const preloadImage = new Image();
-        preloadImage.src = nextQuestion.image;
+    // 預先載入下一題的圖片並等待載入完成
+    const nextIndex = currentQuestionIndex + 1;
+    let imageLoadPromise = Promise.resolve();
+
+    if (nextIndex < currentQuestions.length) {
+        const nextQuestion = currentQuestions[nextIndex];
+        if (nextQuestion.image) {
+            imageLoadPromise = new Promise((resolve) => {
+                const img = new Image();
+                img.onload = resolve;
+                img.onerror = resolve; // 即使失敗也要繼續
+                img.src = nextQuestion.image;
+                // 設定超時防止卡住
+                setTimeout(resolve, 3000);
+            });
+        }
     }
 
     // 淡出當前題目內容
@@ -247,13 +266,17 @@ function proceedToNextQuestion() {
     quizContent.classList.add('fade-out');
     mobileOptions.classList.add('fade-out');
 
-    setTimeout(() => {
+    // 等待淡出動畫 (300ms) 和圖片載入完成
+    Promise.all([
+        new Promise(r => setTimeout(r, 300)),
+        imageLoadPromise
+    ]).then(() => {
         currentQuestionIndex++;
         updateQuestion();
         // 淡入新題目內容
         quizContent.classList.remove('fade-out');
         mobileOptions.classList.remove('fade-out');
-    }, 300);
+    });
 }
 
 function showInstantExplanationInline(isCorrect, explanation, callback) {
@@ -297,7 +320,7 @@ function showInstantExplanationInline(isCorrect, explanation, callback) {
         ">
             <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 24px;">
                 <h2 style="color: ${color}; margin: 0; font-size: 32px; font-weight: 600;">答案是</h2>
-                <span style="font-size: 72px; font-weight: bold; color: ${color}; text-shadow: 0 0 30px ${color}50;">${correctAnswerText}</span>
+                <span style="font-size: 72px; font-weight: bold; color: ${color}; text-shadow: 0 0 30px ${color}50; font-family: Arial, Helvetica, sans-serif;">${correctAnswerText}</span>
             </div>
             <div style="text-align: left; background: #f8f9fa; padding: 20px; border-radius: 16px; margin-bottom: 24px; max-height: 45vh; overflow-y: auto;">
                 <h4 style="margin: 0 0 12px 0; color: #888; font-size: 15px; font-weight: 500;">詳解</h4>

@@ -318,6 +318,7 @@ body.show-results .header-image.quiz-mode {
     min-height: calc(1.4em * 2 + 20px);
     color: white;
     text-align: left;
+    line-height: 1.6;
     width: 100%;
     transition: all 0.5s ease;
     text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 0, 0, 0.3);
