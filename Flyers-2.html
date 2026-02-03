@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全螢幕 iframe</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        #fullscreen-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <iframe id="fullscreen-iframe" src="https://wordwall.net/tc/embed/a182239bef0c4df996ca42d4d227ec5c?themeId=46&templateId=5&fontStackId=0" allowfullscreen></iframe>
+
+    <script>
+        window.onload = function() {
+            var iframe = document.getElementById('fullscreen-iframe');
+            if (iframe.requestFullscreen) {
+                iframe.requestFullscreen();
+            } else if (iframe.mozRequestFullScreen) { // Firefox
+                iframe.mozRequestFullScreen();
+            } else if (iframe.webkitRequestFullscreen) { // Chrome, Safari and Opera
+                iframe.webkitRequestFullscreen();
+            } else if (iframe.msRequestFullscreen) { // Internet Explorer/Edge
+                iframe.msRequestFullscreen();
+            }
+        };
+    </script>
+</body>
+</html>

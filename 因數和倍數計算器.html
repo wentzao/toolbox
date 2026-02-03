@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>因數和倍數計算器</title>
+    <!-- 引入Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <!-- 引入Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css">
+    <!-- 引入KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+    <!-- 設定viewport，禁用縮放 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <!-- 自訂樣式 -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            position: relative;
+        }
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('background.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            filter: saturate(100%) brightness(100%);
+            opacity: 1.0;
+            z-index: -1;
+        }
+        body::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: -1;
+        }
+        #app {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 20px;
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .factor-list, .multiple-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .factor, .multiple {
+            padding: 5px 10px;
+            border: 1px solid #007bff;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        .common-factor, .common-multiple {
+            background-color: #007bff;
+            color: white;
+        }
+        .gcf {
+            background-color: #28a745;
+            color: white;
+        }
+        .lcm {
+            background-color: #dc3545;
+            color: white;
+        }
+        .katex-display {
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+        @media (max-width: 767px) {
+            .card-body {
+                padding: 1rem;
+            }
+        }
+        /* Mac 風格滾動條 */
+        ::-webkit-scrollbar {
+            width: 9px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .short-division {
+            border-left: 2px solid black;
+            border-bottom: 2px solid black;
+            padding-left: 10px;
+            padding-bottom: 5px;
+        }
+        .multiple-list-container {
+            position: relative;
+            margin-bottom: 20px;
+            padding-bottom: 40px; /* 增加底部填充 */
+        }
+        .view-all-btn {
+            position: absolute; /* 改為絕對定位 */
+            bottom: 0; /* 固定在容器底部 */
+            left: 0; /* 對齊左側 */
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #6c757d;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .view-all-btn:hover {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        .multiple-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+        .full-multiple-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px; /* 增加底部邊距 */
+        }
+        .next-multiple-btn {
+            background-color: transparent;
+            color: #007bff;
+            border: 1px solid #007bff;
+            padding: 2px 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            line-height: 1;
+            vertical-align: middle;
+            margin-left: auto;
+        }
+        .lcm-info {
+            margin-bottom: 15px;
+        }
+        .next-multiples {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .view-all-btn {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #6c757d;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .view-all-btn:hover {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        .multiple-controls {
+            margin-top: 5px;
+        }
+        .short-division-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 20px;
+            font-size: 1.2rem; // 增加字體大小
+        }
+        .short-division-table td {
+            padding: 8px 15px; // 增加單元格內邊距
+            text-align: right;
+        }
+        .short-division-table .divisor {
+            text-align: left;
+            border-bottom: none !important;
+            font-weight: bold; // 使除數更加醒目
+        }
+        .short-division-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .short-division-table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        .short-division-table tr {
+            position: relative;
+        }
+        .short-division-table td {
+            padding: 5px 10px;
+            text-align: right;
+        }
+        .short-division-table .divider {
+            border-left: 2px solid black;
+        }
+        .short-division-table tr:not(:last-child) td:not(.divisor) {
+            border-bottom: 2px solid black;
+        }
+        .short-division-table .divisor {
+            text-align: left;
+            border-bottom: none !important;
+        }
+        .highlight-divisor {
+            background-color: #ffff99;
+            transition: background-color 0.3s ease;
+        }
+        .highlight-remainder {
+            background-color: #99ff99;
+            transition: background-color 0.3s ease;
+        }
+        /* 在現有的 style 標籤中添加或修改以下樣式 */
+        .euclidean-table {
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        .euclidean-table th, .euclidean-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .euclidean-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="container">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title text-center">因數和倍數計算器</h2>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="number1">第一個數字：</label>
+                        <input type="number" id="number1" class="form-control" min="1" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="number2">第二個數字：</label>
+                        <input type="number" id="number2" class="form-control" min="1" required>
+                    </div>
+                </div>
+                <button id="calculateButton" class="btn btn-primary btn-block">計算</button>
+            </div>
+        </div>
+
+        <div id="results" style="display: none;">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">因數羅列式</h3>
+                    <div id="factorListingMethod"></div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h3 class="card-title">倍數羅列式</h3>
+                    <div id="multipleListingMethod"></div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h3 class="card-title">短除法</h3>
+                    <div id="shortDivisionMethod"></div>
+                </div>
+            </div>
+
+            <!-- 在 <div id="results"> 的最後添加以下內容 -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h3 class="card-title">最大公因數（GCF）和最小公倍數（LCM）是什麼？</h3>
+                    <div id="gcfLcmIntroduction">
+                        <h4>最大公因數（GCF）</h4>
+                        <p>想像你有很多糖果，想平均分給你的朋友。最大公因數就是你可以分給每個朋友的最多糖果數，讓每個人都拿到一樣多，而且沒有剩下的糖果。</p>
+                        <p>例子：如果你有 12 顆糖果和 18 顆巧克力，最大公因數是 6。這意味著你可以把糖果分成 6 堆，每堆 2 顆糖果和 3 顆巧克力。</p>
+                        <p>用途：幫助我們公平地分配東西，或者簡化分數。</p>
+
+                        <h4>最小公倍數（LCM）</h4>
+                        <p>想像你和朋友在跑步。最小公倍數就是你們同時回到起點的最短距離。</p>
+                        <p>例子：如果小明每 2 分鐘跑一圈，小華每 3 分鐘跑一圈，他們會在 6 分鐘後同時回到起點。這裡的 6 就是最小公倍數。</p>
+                        <p>用途：幫助我們計算事情同時發生的時間，或者找出可以整齊排列物品的數量。</p>
+
+                        <h4>GCF 和 LCM 的有趣關係</h4>
+                        <p>GCF 和 LCM 就像是一對好朋友，它們之間有個神奇的聯繫：</p>
+                        <p>兩個數字相乘，等於它們的 GCF 和 LCM 相乘。</p>
+                        <p>例如：6 和 8 的 GCF 是 2，LCM 是 24。</p>
+                        <p>6 × 8 = 48，而 2 × 24 也等於 48！</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 引入jQuery和Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<!-- 引入KaTeX JS -->
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"></script>
+<!-- 自訂腳本 -->
+<script>
+$(document).ready(function() {
+    // 添加新的事件監聽器
+    $('#number1, #number2').on('keypress', function(e) {
+        if (e.which === 13) { // 13 是 Enter 鍵的 keyCode
+            e.preventDefault(); // 防止表單提交
+            calculateIfBothFilled();
+        }
+    });
+
+    $('#calculateButton').click(function() {
+        calculateIfBothFilled();
+    });
+
+    function calculateIfBothFilled() {
+        let num1 = $('#number1').val().trim();
+        let num2 = $('#number2').val().trim();
+
+        if (num1 && num2) {
+            num1 = parseInt(num1);
+            num2 = parseInt(num2);
+
+            if (isNaN(num1) || isNaN(num2) || num1 < 1 || num2 < 1) {
+                alert('請輸入兩個有效的正整數');
+                return;
+            }
+
+            showFactorListingMethod(num1, num2);
+            showMultipleListingMethod(num1, num2);
+            showShortDivisionMethod(num1, num2);
+
+            $('#results').show();
+        } else {
+            alert('請確保兩個數字都已填寫');
+        }
+    }
+
+    function getFactors(num) {
+        let factors = [];
+        for (let i = 1; i <= num; i++) {
+            if (num % i === 0) {
+                factors.push(i);
+            }
+        }
+        return factors;
+    }
+
+    function showFactorListingMethod(num1, num2) {
+        let factors1 = getFactors(num1);
+        let factors2 = getFactors(num2);
+        let commonFactors = factors1.filter(value => factors2.includes(value));
+        let gcf = Math.max(...commonFactors);
+
+        let html = `<p>數字 ${num1} 的因數：</p><div class="factor-list">`;
+        factors1.forEach(factor => {
+            let className = 'factor';
+            if (commonFactors.includes(factor)) className += ' common-factor';
+            if (factor === gcf) className += ' gcf';
+            html += `<span class="${className}">${factor}</span>`;
+        });
+        html += `</div><p>數字 ${num2} 的因數：</p><div class="factor-list">`;
+        factors2.forEach(factor => {
+            let className = 'factor';
+            if (commonFactors.includes(factor)) className += ' common-factor';
+            if (factor === gcf) className += ' gcf';
+            html += `<span class="${className}">${factor}</span>`;
+        });
+        html += `</div><p>最大公因數：<span class="factor gcf">${gcf}</span></p>`;
+
+        $('#factorListingMethod').html(html);
+    }
+
+    function showMultipleListingMethod(num1, num2) {
+        let gcf = Math.max(...getFactors(num1).filter(value => getFactors(num2).includes(value)));
+        let lcm = (num1 * num2) / gcf;
+        
+        function generateMultipleList(num, otherNum, lcm) {
+            let multiples = [];
+            for (let i = 1; i * num <= lcm; i++) {
+                let multiple = i * num;
+                let className = 'multiple';
+                if (multiple % otherNum === 0) className += ' common-multiple';
+                if (multiple === lcm) className += ' lcm';
+                multiples.push(`<span class="${className}">${multiple}</span>`);
+            }
+            
+            let html = `<div class="multiple-list-container">`;
+            if (multiples.length > 8) {
+                html += `<div class="multiple-list">`;
+                html += multiples.slice(0, 4).join('');
+                html += `<span class="multiple-ellipsis">...</span>`;
+                html += multiples.slice(-4).join('');
+                html += `</div>`;
+                html += `<div class="full-multiple-list" style="display:none;">` + multiples.join('') + `</div>`;
+                html += `<button class="view-all-btn" data-expanded="false">查看更多的倍數</button>`;
+            } else {
+                html += `<div class="multiple-list">` + multiples.join('') + `</div>`;
+            }
+            html += `</div>`;
+            return { html, lcmIndex: multiples.length - 1 };
+        }
+
+        let result1 = generateMultipleList(num1, num2, lcm);
+        let result2 = generateMultipleList(num2, num1, lcm);
+
+        let html = `<p>數字 ${num1} 的倍數：</p>` + result1.html;
+        html += `<p>數字 ${num2} 的倍數：</p>` + result2.html;
+        html += `<div class="lcm-info">`;
+        html += `<p>最小公倍數：<span class="multiple lcm">${lcm}</span></p>`;
+        html += `<p>最小公倍數是 ${num1} 的 ${lcm/num1} 倍，是 ${num2} 的 ${lcm/num2} 倍</p>`;
+        html += `</div>`;
+        html += `<p>其餘公倍數：</p>`;
+        html += `<div class="multiple-controls">`;
+        html += `<span class="next-multiples"></span>`;
+        html += `<button class="next-multiple-btn" data-num1="${num1}" data-num2="${num2}" data-current="${lcm}" data-lcm="${lcm}">+</button>`;
+        html += `</div>`;
+
+        $('#multipleListingMethod').html(html);
+
+        $('.view-all-btn').click(function() {
+            let $container = $(this).closest('.multiple-list-container');
+            let $fullList = $container.find('.full-multiple-list');
+            let $partialList = $container.find('.multiple-list');
+            
+            if ($(this).data('expanded') === false) {
+                $fullList.show();
+                $partialList.hide();
+                $(this).text('收起');
+                $(this).data('expanded', true);
+            } else {
+                $fullList.hide();
+                $partialList.show();
+                $(this).text('查看更多的倍數');
+                $(this).data('expanded', false);
+            }
+        });
+
+        $('.next-multiple-btn').click(function() {
+            let num1 = parseInt($(this).data('num1'));
+            let num2 = parseInt($(this).data('num2'));
+            let current = parseInt($(this).data('current'));
+            let lcm = parseInt($(this).data('lcm'));
+            let next = current + lcm;
+            $(this).siblings('.next-multiples').append(`<span class="multiple" style="color: #dc3545;">${next}</span>`);
+            $(this).data('current', next);
+            $(this).before($(this).siblings('.next-multiples').children().last());
+        });
+    }
+
+    function showShortDivisionMethod(num1, num2) {
+        let a = Math.max(num1, num2);
+        let b = Math.min(num1, num2);
+        let steps = [];
+        let divisor = 2;
+
+        while (divisor <= Math.min(a, b)) {
+            if (a % divisor === 0 && b % divisor === 0) {
+                steps.push({a: a, b: b, divisor: divisor});
+                a /= divisor;
+                b /= divisor;
+            } else {
+                divisor++;
+            }
+        }
+
+        let gcf = steps.reduce((acc, step) => acc * step.divisor, 1);
+        let lcm = (num1 * num2) / gcf;
+
+        let html = '<div class="short-division-container"><table class="short-division-table">';
+        steps.forEach((step, index) => {
+            html += `<tr style="margin-left: ${index * 15}px;">
+                        <td class="divisor highlight-target" data-divisor="${step.divisor}">${step.divisor}</td>
+                        <td class="divider"></td>
+                        <td>${step.a}</td>
+                        <td>${step.b}</td>
+                     </tr>`;
+        });
+        
+        // 最後一列不包含垂直分隔線，也不添加 highlight-target 類
+        html += `<tr style="margin-left: ${steps.length * 15}px;">
+                    <td class="divisor"></td>
+                    <td></td>
+                    <td class="remainder">${a}</td>
+                    <td class="remainder">${b}</td>
+                 </tr>`;
+        html += '</table></div>';
+
+        html += `<p><span class="math gcf-formula" id="gcf-formula">GCF = ${steps.map(step => step.divisor).join(' \\times ')} = ${gcf}</span></p>`;
+        
+        // 修改最小公倍數的計算過程
+        let rightSideProduct = steps.map(step => step.divisor).join(' \\times ');
+        let bottomProduct = `${a} \\times ${b}`;
+        html += `<p><span class="math lcm-formula" id="lcm-formula">LCM = \\frac{${num1} \\times ${num2}}{${gcf}} = ${rightSideProduct} \\times ${bottomProduct} = ${lcm}</span></p>`;
+
+        $('#shortDivisionMethod').html(html);
+
+        // 渲染數學公式
+        renderMathInElement(document.getElementById('shortDivisionMethod'));
+
+        // 添加階梯效果
+        setTimeout(() => {
+            $('.short-division-table tr').each(function(index) {
+                $(this).css('left', index * 10 + 'px');
+            });
+        }, 100);
+
+        // 修改滑鼠移動事件
+        $('#gcf-formula').on('mouseenter', function() {
+            $('.highlight-target').addClass('highlight-divisor');
+        }).on('mouseleave', function() {
+            $('.highlight-target').removeClass('highlight-divisor');
+        });
+
+        $('#lcm-formula').on('mouseenter', function() {
+            $('.highlight-target').addClass('highlight-divisor');
+            $('.remainder').addClass('highlight-remainder');
+        }).on('mouseleave', function() {
+            $('.highlight-target').removeClass('highlight-divisor');
+            $('.remainder').removeClass('highlight-remainder');
+        });
+    }
+
+    // 修改 renderMathInElement 函數
+
+    function renderMathInElement(element) {
+        const mathElements = element.getElementsByClassName('math');
+        for (let mathElement of mathElements) {
+            katex.render(mathElement.textContent, mathElement, {
+                throwOnError: false,
+                displayMode: false
+            });
+        }
+    }
+});
+</script>
+</body>
+</html>

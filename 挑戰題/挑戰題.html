@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <title></title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="gradient-background"></div>
+    <div class="floating-items">
+        <!-- Floating background items will be added by JavaScript -->
+    </div>
+    <div class="custom-scrollbar">
+        <div class="custom-scrollbar-thumb"></div>
+    </div>
+
+    <div class="container">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" class="header-image"
+            id="headerImage">
+
+        <div class="welcome-screen" id="welcomeScreen">
+            <h1>準備好挑戰了嗎？</h1>
+            <button class="start-btn" onclick="startQuiz()">START !</button>
+            <p id="welcomeText"></p>
+        </div>
+
+        <div class="game-container" id="gameContainer">
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="quiz-layout">
+                <div class="quiz-content">
+                    <div class="options">
+                        <button class="option-btn x" onclick="checkAnswer(false)">X</button>
+                    </div>
+                    <div class="quiz-image-container">
+                        <img src="" alt="題目圖片" class="quiz-image" id="questionImage" style="display: none;">
+                    </div>
+                    <div class="options">
+                        <button class="option-btn o" onclick="checkAnswer(true)">O</button>
+                    </div>
+                </div>
+                <div class="mobile-options">
+                    <button class="option-btn x" onclick="checkAnswer(false)">X</button>
+                    <button class="option-btn o" onclick="checkAnswer(true)">O</button>
+                </div>
+                <div class="question" id="question"></div>
+                <div class="result" id="result"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for checklist -->
+    <div class="modal" id="checklistModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h2 style="margin-bottom: 20px; color: #333; font-family: 'BpmfGenSenRounded', Arial, sans-serif;">
+                <span class="checklist-btn-text">領取入學應備物品清單</span>
+            </h2>
+            <form class="checklist-form" onsubmit="submitForm(event)">
+                <div class="form-group">
+                    <label for="parentName">家長姓名</label>
+                    <input type="text" id="parentName" required>
+                </div>
+                <div class="form-group">
+                    <label for="childName">學童姓名</label>
+                    <input type="text" id="childName" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">電子郵件</label>
+                    <input type="email" id="email" required>
+                </div>
+                <button type="submit" class="submit-btn">
+                    <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; margin-right: 8px;">
+                        <path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    確認送出
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+
+</html>

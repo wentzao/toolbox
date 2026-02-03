@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>加法練習</title>
+    <!-- 引入Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <!-- 引入Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css">
+    <!-- 設定viewport，禁用縮放 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <!-- 自訂樣式 -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            position: relative;
+        }
+        body::before {
+            content: "";    
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('background.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            filter: saturate(100%) brightness(100%);
+            opacity: 1.0;
+            z-index: -1;
+        }
+        body::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: -1;
+        }
+        #app {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 20px;
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        #quiz {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            justify-content: space-between;
+        }
+        .quiz-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .question-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 10px; /* 縮短題目之間的間隙 */
+        }
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .keyboard button {
+            padding: 15px;
+            font-size: 24px;
+            border-radius: 10px;
+        }
+        #answerInput {
+            font-size: 20px;
+            text-align: center;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .timer-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+            flex-wrap: nowrap;
+        }
+        #feedback {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-weight: bold;
+        }
+        #progressBarContainer {
+            height: 10px;
+            background-color: #e9ecef;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+        }
+        #progressBar {
+            height: 100%;
+            background-color: #007bff;
+            transition: width 0.5s ease-in-out;
+        }
+        /* Mac 風格滾動條 */
+        ::-webkit-scrollbar {
+            width: 9px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        @media (max-width: 767px) {
+            #questionText {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            #questionText .question-number {
+                margin-bottom: 10px;
+            }
+            #quiz .card {
+                height: auto;
+                margin: auto 0;
+            }
+            #quiz .container {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                min-height: 100vh;
+            }
+            .timer-info {
+                font-size: 14px;
+            }
+            #feedback {
+                font-size: 12px;
+            }
+            .card-body {
+                padding: 1rem;
+            }
+            #questionText .question-number::after {
+                content: none;
+            }
+        }
+        #restartButton {
+            margin-top: 20px;
+        }
+        .vertical-addition {
+            text-align: center; /* 置中顯示 */
+        }
+        .back-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            padding: 8px 15px;
+            font-size: 14px;
+            border-radius: 50px;
+            background-color: white;
+            color: #007bff;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #f8f9fa;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .back-button i {
+            margin-right: 5px;
+        }
+
+        @media (max-width: 767px) {
+            .back-button {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+        }
+        /* 在現有的樣式後添加以下內容 */
+        #leaderboard {
+            font-size: 1.1em;
+        }
+        #leaderboard th, #leaderboard td {
+            text-align: center;
+            vertical-align: middle;
+        }
+        #leaderboard th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        #leaderboard tr:nth-child(1) td {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        #leaderboard tr:nth-child(2) td {
+            font-size: 1.1em;
+        }
+        #leaderboard tr:nth-child(3) td {
+            font-size: 1.05em;
+        }
+        #leaderboard td:nth-child(2),
+        #leaderboard td:nth-child(3) {
+            color: black;
+        }
+        @media (max-width: 576px) {
+            #leaderboard {
+                font-size: 0.9em;
+            }
+            #leaderboard th, #leaderboard td {
+                padding: 0.5rem;
+            }
+        }
+        /* 在現有的樣式後添加以下內容 */
+        .countdown-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9998;
+        }
+
+        .countdown-number {
+            font-size: 10rem;
+            color: white;
+            z-index: 9999;
+        }
+
+        #confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10000;
+            pointer-events: none;
+        }
+        .penalty-time {
+            color: red;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .challenge-button {
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .challenge-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+    </style>
+    <!-- 添加MathJax支持 -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div id="app">
+    <!-- 修改設定框部分 -->
+    <div id="setup" class="container">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title text-center">加法練習</h2>
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>加法位數：</label>
+                            <div class="d-flex">
+                                <select id="firstNumber" class="form-control mr-2">
+                                    <option value="1">1位數</option>
+                                    <option value="2" selected>2位數</option>
+                                    <option value="3">3位數</option>
+                                </select>
+                                <span class="align-self-center">+</span>
+                                <select id="secondNumber" class="form-control ml-2">
+                                    <option value="1">1位數</option>
+                                    <option value="2" selected>2位數</option>
+                                    <option value="3">3位數</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="questionCount">題數：</label>
+                            <input type="number" id="questionCount" class="form-control" value="10" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="timePerQuestion">每題時間（秒）：</label>
+                            <select id="timePerQuestion" class="form-control">
+                                <option value="5">5 秒</option>
+                                <option value="10">10 秒</option>
+                                <option value="15" selected>15 秒</option>
+                                <option value="20">20 秒</option>
+                                <option value="25">25 秒</option>
+                                <option value="30">30 秒</option>
+                                <option value="timer">計時模式</option>
+                            </select>
+                        </div>
+                        <div class="text-center">
+                            <button id="startButton" class="btn btn-primary" style="width: 50%;">開始練習</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 複習專區 -->
+        <div class="card mt-4 review-card">
+            <div class="card-body">
+                <h3 class="card-title">複習專區</h3>
+                <p>加法運算技巧：</p>
+                <ul>
+                    <li>從個位數開始計算，逐位向左進行</li>
+                    <li>注意進位，每當一位的和大於或等於10時，要向左進位</li>
+                    <li>最後一位（最左邊）如果有進位，要在最前面加1</li>
+                </ul>
+                <p>練習提示：</p>
+                <ul>
+                    <li>先計算個位數的和，再計算十位數，最後計算百位數</li>
+                    <li>記住進位的數字，加到下一位的計算中</li>
+                    <li>檢查最終答案的位數是否正確</li>
+                </ul>
+            </div>
+        </div>
+        <!-- 修改排行榜卡片 -->
+        <div class="card mt-4 leaderboard-card">
+            <div class="card-body">
+                <div id="challengeMessage"></div>
+                <div class="text-center mb-3">
+                    <div id="challengeButton" class="challenge-button">
+                        <img src="icons/challenge.gif" alt="挑戰模式" style="width: 200px; height: 100px; cursor: pointer;">
+                    </div>
+                </div>
+                <h3 class="card-title">🏆 排行榜</h3>
+                <table id="leaderboard" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>名次</th>
+                            <th>姓名</th>
+                            <th>秒數</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 排行榜內容將通過 JavaScript 動態填充 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="quiz" class="container" style="display: none;">
+        <button id="backButton" class="btn back-button">
+            <i class="fas fa-arrow-left"></i> 重新來過
+        </button>
+        <div class="quiz-content">
+            <div class="card">
+                <div class="card-body">
+                    <div class="timer-info">
+                        <span class="timer">剩餘時間：<span id="timeLeft"></span> 秒</span>
+                        <span id="feedback"></span>
+                        <span>剩餘題數：<span id="questionsLeft"></span></span>
+                    </div>
+                    <div class="question-container">
+                        <h3 class="question" id="questionText"></h3>
+                        <input type="text" id="answerInput" class="form-control" readonly autocomplete="off" inputmode="numeric">
+                    </div>
+                    <div class="keyboard" id="keyboard">
+                        <button class="btn btn-light" data-value="7">7</button>
+                        <button class="btn btn-light" data-value="8">8</button>
+                        <button class="btn btn-light" data-value="9">9</button>
+                        <button class="btn btn-light" data-value="4">4</button>
+                        <button class="btn btn-light" data-value="5">5</button>
+                        <button class="btn btn-light" data-value="6">6</button>
+                        <button class="btn btn-light" data-value="1">1</button>
+                        <button class="btn btn-light" data-value="2">2</button>
+                        <button class="btn btn-light" data-value="3">3</button>
+                        <button class="btn btn-light" data-value="0">0</button>
+                        <button class="btn btn-warning" id="deleteButton"><i class="fas fa-backspace"></i></button>
+                        <button class="btn btn-success" id="submitButton"><i class="fas fa-check"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="progressBarContainer">
+            <div id="progressBar"></div>
+        </div>
+    </div>
+
+    <div id="result" class="container" style="display: none;">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">練習結束！</h2>
+                <p>你的得分：<span id="score"></span>/<span id="totalQuestions"></span></p>
+                <div id="questionList"></div>
+                <button id="restartButton" class="btn btn-primary">再試一次</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 在 <div id="app"> 內部，添加以下內容 -->
+    <div id="countdown" class="countdown-overlay" style="display: none;">
+        <div class="countdown-number"></div>
+    </div>
+
+    <!-- 在 <div id="app"> 內部，添加以下內容 -->
+    <div id="confirmDialog" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">確認重新開始</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>確定要重新開始嗎？</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="confirmRestart">確定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 在 <div id="app"> 的最後添加 -->
+    <canvas id="confetti"></canvas>
+</div>
+
+<!-- 引入jQuery和Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<!-- 自訂腳本 -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<script>
+$(document).ready(function() {
+    // 保載時到頂部
+    window.scrollTo(0, 0);
+
+    let questionCount = 10;
+    let timePerQuestion = 15;
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timer;
+    let userAnswers = [];
+    let isTimerMode = false;
+    let startTime;
+    let totalTime;
+
+    // 添加新的全局變量
+    let playerName = '';
+
+    let isChallenge = false;
+
+    let penaltyTime = 0;
+
+    // 添加激勵文字
+    const challengeMessage = "你準備好接受挑戰了嗎？\n點擊下方圖片開始挑戰模式！";
+    $('#challengeMessage').html(`<p class="text-center font-weight-bold mb-3">${challengeMessage.replace('\n', '<br>')}</p>`);
+
+    // 修改挑戰按鈕事件
+    $('#challengeButton').click(function() {
+        isChallenge = true;
+        
+        // 觸發彩帶效果
+        startConfetti();
+        
+        // 開始倒數計時
+        startCountdown();
+    });
+
+    // 新增彩帶效果函數
+    function startConfetti() {
+        const duration = 4000; // 4 秒
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 };
+
+        function randomInRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        const interval = setInterval(function() {
+            const timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            const particleCount = 50 * (timeLeft / duration);
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+        }, 250);
+    }
+
+    // 修改 startCountdown 函數
+    function startCountdown() {
+        let count = 3;
+        $('#countdown').show();
+        $('.countdown-number').text(count);
+        startConfetti(); // 開始彩帶效果
+
+        const countdownInterval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                $('.countdown-number').text(count);
+            } else if (count === 0) {
+                $('.countdown-number').text('開始！');
+            } else {
+                clearInterval(countdownInterval);
+                $('#countdown').hide();
+                startChallenge();
+            }
+        }, 1000);
+    }
+
+    // 修改 startChallenge 函數
+    function startChallenge() {
+        $('#firstNumber').val('3');
+        $('#secondNumber').val('3');
+        $('#questionCount').val('10');
+        $('#timePerQuestion').val('timer');
+        isTimerMode = true;
+        isChallenge = true;
+        questionCount = 10;
+        penaltyTime = 0;
+
+        generateQuestions(3, 3);
+        currentQuestionIndex = 0;
+        score = 0;
+        userAnswers = [];
+
+        $('#setup').hide();
+        startQuiz();
+    }
+
+    // 修改 startQuiz 函數
+    function startQuiz() {
+        startTime = new Date().getTime();
+        $('.timer').text('已用時間：0.000 秒');
+        $('#quiz').show();
+        showQuestion();
+    }
+
+    // 添加開始測驗函數
+    function startQuiz() {
+        startTime = new Date().getTime();
+        $('.timer').text('已用時間：0.000 秒');
+        $('#quiz').show();
+        showQuestion();
+    }
+
+    // 添加獲取排行榜數據的函數
+    function fetchLeaderboard() {
+        $.ajax({
+            url: 'https://rainbowstudent.wentzao.com/gamechart',
+            method: 'GET',
+            data: { game: '加法練習', mode: '挑戰模式', limit: 10 },
+            success: function(data) {
+                displayLeaderboard(data);
+            },
+            error: function(error) {
+                console.error('Error fetching leaderboard:', error);
+                displayLeaderboard([]); // 顯示空的排行榜
+            }
+        });
+    }
+
+    // 添加顯示排行榜的函數
+    function displayLeaderboard(data) {
+        let leaderboardHtml = '';
+        for (let i = 0; i < 10; i++) {
+            if (i < data.length) {
+                leaderboardHtml += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${data[i].name}</td>
+                        <td>${parseFloat(data[i].time).toFixed(3)} (${data[i].score})</td>
+                    </tr>
+                `;
+            } else {
+                leaderboardHtml += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                `;
+            }
+        }
+        $('#leaderboard tbody').html(leaderboardHtml);
+    }
+
+    $('#startButton').click(function() {
+        isChallenge = false;
+        isTimerMode = ($('#timePerQuestion').val() === 'timer');
+        let firstNumberDigits = parseInt($('#firstNumber').val());
+        let secondNumberDigits = parseInt($('#secondNumber').val());
+        questionCount = parseInt($('#questionCount').val());
+        timePerQuestion = $('#timePerQuestion').val();
+        isTimerMode = (timePerQuestion === 'timer');
+
+        if (isTimerMode) {
+            startTime = new Date().getTime();
+            $('.timer').text('已用時間：0.000 秒');
+        } else {
+            timePerQuestion = parseInt(timePerQuestion);
+        }
+
+        generateQuestions(firstNumberDigits, secondNumberDigits);
+        currentQuestionIndex = 0;
+        score = 0;
+        userAnswers = [];
+
+        $('#setup').hide();
+        $('#quiz').show();
+        showQuestion();
+
+        // 在 $('#startButton').click 函數中添加以下代碼來重置玩家名稱
+        playerName = '';
+    });
+
+    function generateQuestions(firstNumberDigits, secondNumberDigits) {
+        questions = [];
+        let usedQuestions = new Set();
+        while (questions.length < questionCount) {
+            let num1 = generateRandomNumber(firstNumberDigits);
+            let num2 = generateRandomNumber(secondNumberDigits);
+            let questionKey = `${num1}+${num2}`;
+            if (!usedQuestions.has(questionKey)) {
+                let answer = num1 + num2;
+                questions.push({
+                    num1: num1,
+                    num2: num2,
+                    answer: answer
+                });
+                usedQuestions.add(questionKey);
+            }
+        }
+    }
+
+    function generateRandomNumber(digits) {
+        let min = Math.pow(10, digits - 1);
+        let max = Math.pow(10, digits) - 1;
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function showQuestion() {
+        if (currentQuestionIndex >= questions.length) {
+            endQuiz();
+            return;
+        }
+
+        let currentQuestion = questions[currentQuestionIndex];
+        $('#questionText').html('<span class="question-number">第 ' + (currentQuestionIndex + 1) + ' 題：</span><span>' + currentQuestion.num1 + ' + ' + currentQuestion.num2 + ' = ?</span>');
+        $('#answerInput').val('').prop('readonly', false);  // 清空輸入框並啟用
+        $('#timeLeft').text(timePerQuestion);
+        $('#questionsLeft').text(questions.length - currentQuestionIndex);
+        $('#keyboard').show();
+        $('#feedback').text('');
+
+        updateProgressBar();
+
+        $('#answerInput').focus();
+
+        clearInterval(timer);
+        if (isTimerMode) {
+            updateTimer();
+            timer = setInterval(updateTimer, 10); // 每10毫秒更新一次
+        } else {
+            let timeLeft = timePerQuestion;
+            timer = setInterval(function() {
+                timeLeft--;
+                $('#timeLeft').text(timeLeft);
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    checkAnswer(true);
+                }
+            }, 1000);
+        }
+    }
+
+    function updateProgressBar() {
+        let progress = (currentQuestionIndex / questions.length) * 100;
+        $('#progressBar').css('width', progress + '%');
+    }
+
+    $('#answerInput').focus(function() {
+        $('#keyboard').show();
+    });
+
+    $('#keyboard button').not('#deleteButton, #submitButton').click(function() {
+        let num = $(this).data('value');
+        let currentVal = $('#answerInput').val();
+        $('#answerInput').val(currentVal + num);
+    });
+
+    $('#deleteButton').click(function() {
+        let currentVal = $('#answerInput').val();
+        $('#answerInput').val(currentVal.slice(0, -1));
+    });
+
+    $('#submitButton').click(function() {
+        checkAnswer();
+    });
+
+    function checkAnswer(timeUp = false) {
+        clearInterval(timer);
+        let userAnswer = parseInt($('#answerInput').val());
+        let correctAnswer = questions[currentQuestionIndex].answer;
+        $('#answerInput').prop('readonly', true);
+        if (userAnswer === correctAnswer) {
+            score++;
+            $('#feedback').html('<span class="text-success">正確！</span>');
+        } else {
+            if (timeUp) {
+                $('#feedback').html('<span class="text-danger">時間到！</span>');
+            } else {
+                $('#feedback').html('<span class="text-danger">錯誤！</span>');
+            }
+            if (isChallenge) {
+                penaltyTime += 15;
+            }
+        }
+        userAnswers.push({
+            num1: questions[currentQuestionIndex].num1,
+            num2: questions[currentQuestionIndex].num2,
+            correctAnswer: correctAnswer,
+            userAnswer: userAnswer,
+            isCorrect: (userAnswer === correctAnswer)
+        });
+        currentQuestionIndex++;
+        setTimeout(showQuestion, 500);  // 縮短到0.5秒
+
+        if (isTimerMode && currentQuestionIndex >= questions.length) {
+            totalTime = new Date().getTime() - startTime + penaltyTime * 1000;
+        }
+    }
+
+    function updateTimer() {
+        let currentTime = new Date().getTime();
+        let elapsedTime = currentTime - startTime;
+        let seconds = Math.floor(elapsedTime / 1000);
+        let milliseconds = elapsedTime % 1000;
+        $('.timer').html('已用時間：' + seconds + '.' + milliseconds.toString().padStart(3, '0') + ' 秒' +
+            (penaltyTime > 0 ? '<span class="penalty-time">(+' + penaltyTime + '秒)</span>' : ''));
+    }
+
+    function getVerticalAddition(num1, num2) {
+        let maxLength = Math.max(num1.toString().length, num2.toString().length);
+        let sum = num1 + num2;
+        let carry = 0;
+        let carryLine = '';
+
+        for (let i = 0; i < maxLength; i++) {
+            let digit1 = Math.floor(num1 / Math.pow(10, i)) % 10;
+            let digit2 = Math.floor(num2 / Math.pow(10, i)) % 10;
+            let digitSum = digit1 + digit2 + carry;
+            carry = Math.floor(digitSum / 10);
+            if (carry > 0) {
+                carryLine = '\\small{' + carry + '}\\phantom{0}' + carryLine;
+            } else {
+                carryLine = '\\phantom{\\small{0}}\\phantom{0}' + carryLine;
+            }
+        }
+
+        let latex = '\\large{\\begin{array}{r}';
+        latex += `${carryLine} \\\\[-.7em]`;
+        latex += `${num1.toString().padStart(maxLength, '\\phantom{0}')} \\\\`;
+        latex += `+ ${num2.toString().padStart(maxLength, '\\phantom{0}')} \\\\`;
+        latex += '\\hline ';
+        latex += `${sum} \\\\`;
+        latex += '\\end{array}}';
+
+        return latex;
+    }
+
+    // 修改 endQuiz 函數
+    function endQuiz() {
+        $('#quiz').hide();
+        $('#progressBar').css('width', '100%');
+        $('#result').show();
+        
+        // 清空之前的結果
+        $('#result .card-body').empty();
+        
+        // 添加標題
+        $('#result .card-body').append('<h2 class="card-title">練習結束！</h2>');
+        
+        // 添加得分
+        $('#result .card-body').append('<p>你的得分：<span id="score">' + score + '</span>/<span id="totalQuestions">' + questions.length + '</span></p>');
+
+        let totalTimeInSeconds = (totalTime - penaltyTime * 1000) / 1000;
+        let competitionTimeInSeconds = totalTime / 1000;
+
+        // 在同一行顯示總用時和比賽時間
+        $('#result .card-body').append(
+            '<p>總用時：' + totalTimeInSeconds.toFixed(3) + ' 秒 | 比賽時間：' + competitionTimeInSeconds.toFixed(3) + ' 秒 ' +
+            (penaltyTime > 0 ? '(包含 ' + penaltyTime + ' 秒懲罰時間)' : '') + '</p>'
+        );
+
+        if (isChallenge) {
+            $('#finalTime').text(competitionTimeInSeconds.toFixed(3));
+            $('#nameInputModal').modal('show');
+        }
+
+        // 添加題目列表
+        let questionListHtml = '<h3>題目列表：</h3><ul class="list-group">';
+        for (let i = 0; i < userAnswers.length; i++) {
+            let q = userAnswers[i];
+            let listItemClass = q.isCorrect ? 'list-group-item list-group-item-success' : 'list-group-item list-group-item-danger';
+            questionListHtml += '<li class="' + listItemClass + '">';
+            questionListHtml += '題目 ' + (i + 1) + '：' + q.num1 + ' + ' + q.num2 + ' = ' + q.correctAnswer + '<br>';
+            questionListHtml += '你的答案：' + q.userAnswer + '<br>';
+            questionListHtml += '直式計算：<br>';
+            questionListHtml += '<div class="vertical-addition">\\[' + getVerticalAddition(q.num1, q.num2) + '\\]</div>';
+            questionListHtml += '</li>';
+        }
+        questionListHtml += '</ul>';
+        $('#result .card-body').append(questionListHtml);
+
+        // 添加重新開始按鈕
+        $('#result .card-body').append('<button id="restartButton" class="btn btn-primary">再試一次</button>');
+
+        // 重新綁定重新開始按鈕的事件
+        $('#restartButton').click(function() {
+            isChallenge = false;
+            $('#result').hide();
+            $('#progressBar').css('width', '0%');
+            $('#setup').show();
+            window.scrollTo(0, 0);
+        });
+
+        MathJax.typeset();
+    }
+
+    // 修改提交成績按鈕事件
+    $('#submitScoreBtn').click(function() {
+        playerName = $('#playerNameInput').val().trim();
+        if (playerName) {
+            submitScore(totalTime / 1000);
+            $('#nameInputModal').modal('hide');
+        } else {
+            alert('請輸入你的名字！');
+        }
+    });
+
+    // 修改提交成績的函數
+    function submitScore(time) {
+        $.ajax({
+            url: 'https://rainbowstudent.wentzao.com/gamechart',
+            method: 'POST',
+            data: {
+                game: '加法練習',
+                mode: '挑戰模式',
+                name: playerName,
+                time: time.toFixed(3),
+                score: score + '/' + questionCount
+            },
+            success: function(response) {
+                alert('成績提交成功！');
+                fetchLeaderboard(); // 重新獲取並顯示排行榜
+            },
+            error: function(error) {
+                console.error('Error submitting score:', error);
+                alert('成績提交失敗，請稍後再試。');
+            }
+        });
+    }
+
+    $('#restartButton').click(function() {
+        isChallenge = false;
+        $('#result').hide();
+        $('#progressBar').css('width', '0%');
+        $('#setup').show();
+        window.scrollTo(0, 0);
+    });
+
+    document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
+    });
+
+    document.addEventListener('dblclick', function(e) {
+        e.preventDefault();
+    });
+
+    $('#answerInput').on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            checkAnswer();
+        }
+    });
+
+    setInterval(function() {
+        $('#answerInput').focus();
+    }, 100);
+
+    $('#backButton').click(function() {
+        $('#confirmDialog').modal('show');
+    });
+
+    $('#confirmRestart').click(function() {
+        isChallenge = false;
+        clearInterval(timer);
+        $('#quiz').hide();
+        $('#setup').show();
+        $('#progressBar').css('width', '0%');
+        window.scrollTo(0, 0);
+        $('#confirmDialog').modal('hide');
+    });
+
+    // 在 document ready 函數的最後添加以下代碼來初始化排行榜
+    fetchLeaderboard();
+});
+</script>
+
+<!-- 在 body 結束標籤前添加以下內容 -->
+<div class="modal fade" id="nameInputModal" tabindex="-1" role="dialog" aria-labelledby="nameInputModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="nameInputModalLabel">恭喜完成挑戰！</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-center">你的總用時：<span id="finalTime" class="font-weight-bold"></span> 秒</p>
+                <div class="form-group">
+                    <label for="playerNameInput">請輸入你的字：</label>
+                    <input type="text" class="form-control" id="playerNameInput">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="submitScoreBtn">提交成績</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
