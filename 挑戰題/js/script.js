@@ -59,6 +59,13 @@ async function initializePage() {
             }
         }
 
+        // [Custom Feature] Toggle Zhuyin Font
+        if (challengeData.useZhuyinFont) {
+            document.body.style.fontFamily = "'BpmfGenSenRounded', Arial, sans-serif";
+        } else {
+            document.body.style.fontFamily = "'Noto Sans TC', Arial, sans-serif";
+        }
+
     } catch (error) {
         console.error('Error loading initial data:', error);
     }
