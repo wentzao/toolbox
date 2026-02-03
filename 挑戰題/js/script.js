@@ -65,6 +65,19 @@ async function initializePage() {
         if (challengeData.gradientColorStart && challengeData.gradientColorEnd) {
             document.querySelector('.gradient-background').style.background =
                 `linear-gradient(135deg, ${challengeData.gradientColorStart}, ${challengeData.gradientColorEnd})`;
+
+            // [Custom Feature] Set Question Text Shadow to use Gradient End Color
+            const questionEl = document.getElementById('question');
+            if (questionEl) {
+                // Remove default black shadow and use the theme color
+                // We use a darker version or just the color itself? User asked for "End color".
+                // Adding some opacity or just solid? Text shadow usually handles solid colors fine.
+                // Let's use the color directly as requested.
+                // To make it look like a shadow, maybe we assume the user picks a color that contrasts well?
+                // Or maybe they want a glow.
+                // Using the exact CSS from before but substituting the color.
+                questionEl.style.textShadow = `2px 2px 6px ${challengeData.gradientColorEnd}, 0 0 20px ${challengeData.gradientColorEnd}`;
+            }
         }
 
         // 儲存題目數據供後續使用
