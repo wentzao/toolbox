@@ -179,10 +179,13 @@ body.show-results .container {
 }
 
 .header-image.quiz-mode {
-    max-width: 250px;
+    max-width: 120px;
     margin: 0;
-    /* 移除邊距 */
-    transform: translateY(0);
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    transform: none;
+    padding: 0;
 }
 
 /* 確保在結果頁面中，標題圖片保持位置不變 */
