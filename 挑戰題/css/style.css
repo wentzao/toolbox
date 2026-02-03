@@ -1,13 +1,13 @@
 /* 注音字體 */
 @font-face {
     font-family: 'BpmfGenSenRounded';
-    src: url('../fonts/BpmfGenSenRounded-R.ttf') format('truetype');
+    src: url('../../fonts/BpmfGenSenRounded-R.ttf') format('truetype');
 }
 
 /* 一般字體 (非注音) */
 @font-face {
     font-family: 'ZihaiKaiTi';
-    src: url('../fonts/字嗨注音標楷.ttf') format('truetype');
+    src: url('../../fonts/字嗨注音標楷.ttf') format('truetype');
 }
 
 * {
