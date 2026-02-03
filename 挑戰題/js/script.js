@@ -198,37 +198,40 @@ function proceedToNextQuestion() {
 function showInstantExplanationInline(isCorrect, explanation, callback) {
     const quizContent = document.querySelector('.quiz-content');
     const mobileOptions = document.querySelector('.mobile-options');
+    const questionImage = document.getElementById('questionImage');
+    const question = currentQuestions[currentQuestionIndex];
 
-    // Hide the answer buttons
-    mobileOptions.classList.add('fade-out');
+    // Fade the O/X buttons instead of hiding
+    mobileOptions.style.opacity = '0.3';
+    mobileOptions.style.pointerEvents = 'none';
 
-    const title = isCorrect ? "答對了！" : "答錯了";
-    const color = isCorrect ? "#4CAF50" : "#F44336";
-    const bgColor = isCorrect ? "#E8F5E9" : "#FFEBEE";
+    // Get the correct answer text (O or X)
+    const correctAnswerText = question.correctAnswer ? 'O' : 'X';
+    const color = question.correctAnswer ? "#4CAF50" : "#F44336";
+    const bgColor = question.correctAnswer ? "#E8F5E9" : "#FFEBEE";
 
-    const icon = isCorrect ?
-        `<svg viewBox="0 0 24 24" style="width:50px;height:50px;fill:${color};"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5" stroke="white" stroke-width="2" fill="none"/></svg>` :
-        `<svg viewBox="0 0 24 24" style="width:50px;height:50px;fill:${color};"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6 M9 9l6 6" stroke="white" stroke-width="2" fill="none"/></svg>`;
-
-    // Create inline explanation element
+    // Create inline explanation element to replace the image
     const explanationDiv = document.createElement('div');
     explanationDiv.className = 'inline-explanation';
     explanationDiv.style.cssText = `
-        margin-top: 20px;
         padding: 20px;
         background: ${bgColor};
         border-radius: 15px;
         border-left: 5px solid ${color};
         text-align: center;
         opacity: 0;
-        transform: translateY(20px);
+        transform: scale(0.95);
         transition: all 0.4s ease;
+        min-height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     `;
 
     explanationDiv.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
-            ${icon}
-            <h3 style="color: ${color}; margin: 0; font-size: 24px;">${title}</h3>
+            <span style="font-size: 40px; font-weight: bold; color: ${color};">${correctAnswerText}</span>
+            <h3 style="color: ${color}; margin: 0; font-size: 22px;">答案是 ${correctAnswerText}</h3>
         </div>
         <div style="text-align: left; background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; max-height: 30vh; overflow-y: auto;">
             <div style="font-size: 15px; line-height: 1.6; color: #333;">${explanation || "沒有詳解說明。"}</div>
@@ -243,18 +246,20 @@ function showInstantExplanationInline(isCorrect, explanation, callback) {
             cursor: pointer; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             transition: transform 0.2s;
+            align-self: center;
         ">
             ${currentQuestionIndex + 1 < currentQuestions.length ? '下一題' : '看結果'} →
         </button>
     `;
 
-    // Insert after quiz-content
-    quizContent.parentNode.insertBefore(explanationDiv, mobileOptions);
+    // Hide the image and insert the explanation in its place
+    questionImage.style.display = 'none';
+    questionImage.parentNode.insertBefore(explanationDiv, questionImage.nextSibling);
 
     // Animate in
     requestAnimationFrame(() => {
         explanationDiv.style.opacity = '1';
-        explanationDiv.style.transform = 'translateY(0)';
+        explanationDiv.style.transform = 'scale(1)';
     });
 
     const nextBtn = explanationDiv.querySelector('.next-btn');
@@ -262,10 +267,14 @@ function showInstantExplanationInline(isCorrect, explanation, callback) {
     nextBtn.onmouseout = () => nextBtn.style.transform = 'scale(1)';
     nextBtn.onclick = () => {
         explanationDiv.style.opacity = '0';
-        explanationDiv.style.transform = 'translateY(-20px)';
+        explanationDiv.style.transform = 'scale(0.95)';
         setTimeout(() => {
             explanationDiv.remove();
-            mobileOptions.classList.remove('fade-out');
+            // Restore image for next question
+            questionImage.style.display = 'block';
+            // Restore buttons
+            mobileOptions.style.opacity = '1';
+            mobileOptions.style.pointerEvents = 'auto';
             callback();
         }, 300);
     };
