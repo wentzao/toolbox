@@ -54,6 +54,8 @@ async function initializePage() {
 
         // 更新網頁標題
         document.title = `文藻美語 - ${challengeData.title}`;
+        // 更新頁面標題（h1）
+        document.getElementById('pageTitle').textContent = challengeData.title || '準備好挑戰了嗎？';
         // 更新標題圖片
         document.getElementById('headerImage').src = data.image_url;
         // 更新歡迎文字
@@ -270,32 +272,34 @@ function showInstantExplanationInline(isCorrect, explanation, callback) {
         <div class="explanation-modal-content" style="
             background: white;
             color: #333;
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 90%;
-            width: 400px;
+            padding: 35px 20px;
+            border-radius: 24px;
+            max-width: 95%;
+            width: 100%;
+            max-width: 450px;
             text-align: center;
             transform: scale(0.8);
             transition: transform 0.3s ease;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
         ">
-            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 20px;">
-                <h2 style="color: ${color}; margin: 0; font-size: 28px;">答案是</h2>
-                <span style="font-size: 60px; font-weight: bold; color: ${color}; text-shadow: 0 0 20px ${color}40;">${correctAnswerText}</span>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 24px;">
+                <h2 style="color: ${color}; margin: 0; font-size: 32px; font-weight: 600;">答案是</h2>
+                <span style="font-size: 72px; font-weight: bold; color: ${color}; text-shadow: 0 0 30px ${color}50;">${correctAnswerText}</span>
             </div>
-            <div style="text-align: left; background: #f5f5f5; padding: 15px; border-radius: 10px; margin-bottom: 20px; max-height: 40vh; overflow-y: auto;">
-                <h4 style="margin: 0 0 10px 0; color: #666; font-size: 14px;">詳解：</h4>
-                <div style="font-size: 16px; line-height: 1.6; white-space: pre-line;">${explanation || "沒有詳解說明。"}</div>
+            <div style="text-align: left; background: #f8f9fa; padding: 20px; border-radius: 16px; margin-bottom: 24px; max-height: 45vh; overflow-y: auto;">
+                <h4 style="margin: 0 0 12px 0; color: #888; font-size: 15px; font-weight: 500;">詳解</h4>
+                <div style="font-size: 18px; line-height: 1.7; white-space: pre-line; color: #333;">${explanation || "沒有詳解說明。"}</div>
             </div>
             <button class="next-btn" style="
                 background: ${color}; 
                 color: white; 
                 border: none; 
-                padding: 14px 40px; 
+                padding: 16px 50px; 
                 border-radius: 50px; 
-                font-size: 18px; 
+                font-size: 20px;
+                font-weight: 600;
                 cursor: pointer; 
-                box-shadow: 0 6px 20px ${color}60;
+                box-shadow: 0 8px 25px ${color}50;
                 transition: transform 0.2s, box-shadow 0.2s;
             ">
                 ${currentQuestionIndex + 1 < currentQuestions.length ? '下一題' : '看結果'} →
