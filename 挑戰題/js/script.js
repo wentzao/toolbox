@@ -241,12 +241,12 @@ function showInstantExplanationInline(isCorrect, explanation, callback) {
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         ">
             <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 20px;">
+                <h2 style="color: ${color}; margin: 0; font-size: 28px;">答案是</h2>
                 <span style="font-size: 60px; font-weight: bold; color: ${color}; text-shadow: 0 0 20px ${color}40;">${correctAnswerText}</span>
-                <h2 style="color: ${color}; margin: 0; font-size: 28px;">答案是 ${correctAnswerText}</h2>
             </div>
             <div style="text-align: left; background: #f5f5f5; padding: 15px; border-radius: 10px; margin-bottom: 20px; max-height: 40vh; overflow-y: auto;">
                 <h4 style="margin: 0 0 10px 0; color: #666; font-size: 14px;">詳解：</h4>
-                <div style="font-size: 16px; line-height: 1.6;">${explanation || "沒有詳解說明。"}</div>
+                <div style="font-size: 16px; line-height: 1.6; white-space: pre-line;">${explanation || "沒有詳解說明。"}</div>
             </div>
             <button class="next-btn" style="
                 background: ${color}; 
