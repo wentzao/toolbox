@@ -4,11 +4,11 @@ let currentQuestionIndex = 0;
 let score = 0;
 
 // 防止 iOS Safari 的雙指縮放
-document.addEventListener('gesturestart', function(e) {
+document.addEventListener('gesturestart', function (e) {
     e.preventDefault();
 });
 
-document.addEventListener('touchmove', function(e) {
+document.addEventListener('touchmove', function (e) {
     // 在答題階段禁止滾動
     if (!document.body.classList.contains('show-results')) {
         e.preventDefault();
@@ -31,34 +31,34 @@ async function initializePage() {
         }
         const data = await response.json();
         const challengeData = data.challenge_data;
-        
+
         // 更新網頁標題
         document.title = `文藻美語 - ${challengeData.title}`;
         // 更新標題圖片
         document.getElementById('headerImage').src = data.image_url;
         // 更新歡迎文字
         document.getElementById('welcomeText').textContent = challengeData.welcomeText || '歡迎來到文藻美語的挑戰題！';
-        
+
         // 更新背景顏色
         if (challengeData.gradientColorStart && challengeData.gradientColorEnd) {
-            document.querySelector('.gradient-background').style.background = 
+            document.querySelector('.gradient-background').style.background =
                 `linear-gradient(135deg, ${challengeData.gradientColorStart}, ${challengeData.gradientColorEnd})`;
         }
-        
+
         // 儲存題目數據供後續使用
         currentQuestionSet = challengeData;
-        
+
         // [Custom Feature] Update Checklist Button Text from Config
         if (challengeData.checklistButtonText) {
-             const btnText = document.querySelector('.checklist-btn-text');
-             if(btnText) btnText.textContent = challengeData.checklistButtonText;
-             
-             // If button text is empty, maybe hide the button?
-             if(challengeData.checklistButtonText === "") {
-                 document.querySelector('.checklist-btn').style.display = 'none';
-             }
+            const btnText = document.querySelector('.checklist-btn-text');
+            if (btnText) btnText.textContent = challengeData.checklistButtonText;
+
+            // If button text is empty, maybe hide the button?
+            if (challengeData.checklistButtonText === "") {
+                document.querySelector('.checklist-btn').style.display = 'none';
+            }
         }
-        
+
     } catch (error) {
         console.error('Error loading initial data:', error);
     }
@@ -162,6 +162,17 @@ function checkAnswer(answer) {
         score++;
     }
 
+    // [Custom Feature] Instant Explanation
+    if (currentQuestionSet && currentQuestionSet.showInstantExplanation) {
+        showInstantExplanationOverlay(isCorrect, question.explanation, () => {
+            proceedToNextQuestion();
+        });
+    } else {
+        proceedToNextQuestion();
+    }
+}
+
+function proceedToNextQuestion() {
     // 預先載入下一題的圖片
     if (currentQuestionIndex + 1 < currentQuestions.length) {
         const nextQuestion = currentQuestions[currentQuestionIndex + 1];
@@ -182,6 +193,57 @@ function checkAnswer(answer) {
         quizContent.classList.remove('fade-out');
         mobileOptions.classList.remove('fade-out');
     }, 300);
+}
+
+function showInstantExplanationOverlay(isCorrect, explanation, callback) {
+    const overlay = document.createElement('div');
+    overlay.className = 'instant-explanation-overlay';
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85); z-index: 1000;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        color: white; padding: 20px; text-align: center;
+        opacity: 0; transition: opacity 0.3s;
+    `;
+
+    const icon = isCorrect ?
+        `<svg viewBox="0 0 24 24" style="width:60px;height:60px;fill:#4CAF50;margin-bottom:20px;filter: drop-shadow(0 0 10px #4CAF50);"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5" stroke="white" stroke-width="2" fill="none"/></svg>` :
+        `<svg viewBox="0 0 24 24" style="width:60px;height:60px;fill:#F44336;margin-bottom:20px;filter: drop-shadow(0 0 10px #F44336);"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6 M9 9l6 6" stroke="white" stroke-width="2" fill="none"/></svg>`;
+
+    const title = isCorrect ? "答對了！" : "答錯了";
+    const color = isCorrect ? "#4CAF50" : "#F44336";
+
+    overlay.innerHTML = `
+        <div style="background: white; color: #333; padding: 30px; border-radius: 20px; max-width: 90%; width: 400px; transform: scale(0.8); transition: transform 0.3s;">
+            ${icon}
+            <h2 style="color: ${color}; margin: 0 0 15px 0;">${title}</h2>
+            <div style="text-align: left; background: #f5f5f5; padding: 15px; border-radius: 10px; margin-bottom: 20px; max-height: 40vh; overflow-y: auto;">
+                <h4 style="margin:0 0 10px 0; color:#666; font-size:14px;">詳解：</h4>
+                <div style="font-size: 16px; line-height: 1.6;">${explanation || "沒有詳解說明。"}</div>
+            </div>
+            <button class="next-btn" style="background: ${color}; color: white; border: none; padding: 12px 30px; border-radius: 50px; font-size: 18px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                下一題 <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Animation
+    requestAnimationFrame(() => {
+        overlay.style.opacity = '1';
+        overlay.querySelector('div').style.transform = 'scale(1)';
+    });
+
+    const nextBtn = overlay.querySelector('.next-btn');
+    nextBtn.onclick = () => {
+        overlay.style.opacity = '0';
+        overlay.querySelector('div').style.transform = 'scale(0.8)';
+        setTimeout(() => {
+            overlay.remove();
+            callback();
+        }, 300);
+    };
 }
 
 function showFinalResult() {
@@ -229,8 +291,11 @@ function showFinalResult() {
     // 獲取回饋文字
     const feedback = getFeedbackText(percentage);
 
-    // [Custom Feature] Button Text
-    const btnText = currentQuestionSet.checklistButtonText || '領取應備物品清單';
+    // [Custom Feature] Button Text Logic
+    const btnText = currentQuestionSet.checklistButtonText;
+    const hasBtnText = btnText && btnText.trim().length > 0;
+    const finalBtnText = hasBtnText ? btnText : '領取應備物品清單';
+    const btnDisplay = hasBtnText ? 'flex' : 'none';
 
     // 隱藏問題容器
     document.getElementById('result').innerHTML = `
@@ -249,13 +314,13 @@ function showFinalResult() {
         </div>
         <div class="action-buttons">
             <button class="reveal-btn" onclick="revealExplanations()">點我看詳解</button>
-            <button class="checklist-btn" onclick="showChecklistModal()">
+            <button class="checklist-btn" onclick="showChecklistModal()" style="display: ${btnDisplay}">
                 <svg viewBox="0 0 24 24">
                     <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"></path>
                     <rect x="9" y="3" width="6" height="4" rx="2"></rect>
                     <path d="M9 14l2 2 4-4"></path>
                 </svg>
-                <span class="checklist-btn-text">${btnText}</span>
+                <span class="checklist-btn-text">${finalBtnText}</span>
             </button>
         </div>
         ${explanationHTML}
@@ -281,10 +346,9 @@ function showFinalResult() {
 
         setTimeout(() => {
             document.querySelector('.action-buttons').classList.add('show');
-            // [Custom Feature] Instant Explanation
-            if(currentQuestionSet && currentQuestionSet.showInstantExplanation) {
-                setTimeout(revealExplanations, 300);
-            }
+            // If instant explanation is on, we don't necessarily reveal all at end automatically, 
+            // or we do? User removed "automatically show full explanation" request.
+            // Let's keep it manual reveal for now unless requested.
         }, 1600);
     }, 100);
 
