@@ -164,7 +164,7 @@ function checkAnswer(answer) {
 
     // [Custom Feature] Instant Explanation
     if (currentQuestionSet && currentQuestionSet.showInstantExplanation) {
-        showInstantExplanationOverlay(isCorrect, question.explanation, () => {
+        showInstantExplanationInline(isCorrect, question.explanation, () => {
             proceedToNextQuestion();
         });
     } else {
@@ -195,52 +195,77 @@ function proceedToNextQuestion() {
     }, 300);
 }
 
-function showInstantExplanationOverlay(isCorrect, explanation, callback) {
-    const overlay = document.createElement('div');
-    overlay.className = 'instant-explanation-overlay';
-    overlay.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.85); z-index: 1000;
-        display: flex; flex-direction: column; justify-content: center; align-items: center;
-        color: white; padding: 20px; text-align: center;
-        opacity: 0; transition: opacity 0.3s;
-    `;
+function showInstantExplanationInline(isCorrect, explanation, callback) {
+    const quizContent = document.querySelector('.quiz-content');
+    const mobileOptions = document.querySelector('.mobile-options');
 
-    const icon = isCorrect ?
-        `<svg viewBox="0 0 24 24" style="width:60px;height:60px;fill:#4CAF50;margin-bottom:20px;filter: drop-shadow(0 0 10px #4CAF50);"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5" stroke="white" stroke-width="2" fill="none"/></svg>` :
-        `<svg viewBox="0 0 24 24" style="width:60px;height:60px;fill:#F44336;margin-bottom:20px;filter: drop-shadow(0 0 10px #F44336);"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6 M9 9l6 6" stroke="white" stroke-width="2" fill="none"/></svg>`;
+    // Hide the answer buttons
+    mobileOptions.classList.add('fade-out');
 
     const title = isCorrect ? "答對了！" : "答錯了";
     const color = isCorrect ? "#4CAF50" : "#F44336";
+    const bgColor = isCorrect ? "#E8F5E9" : "#FFEBEE";
 
-    overlay.innerHTML = `
-        <div style="background: white; color: #333; padding: 30px; border-radius: 20px; max-width: 90%; width: 400px; transform: scale(0.8); transition: transform 0.3s;">
-            ${icon}
-            <h2 style="color: ${color}; margin: 0 0 15px 0;">${title}</h2>
-            <div style="text-align: left; background: #f5f5f5; padding: 15px; border-radius: 10px; margin-bottom: 20px; max-height: 40vh; overflow-y: auto;">
-                <h4 style="margin:0 0 10px 0; color:#666; font-size:14px;">詳解：</h4>
-                <div style="font-size: 16px; line-height: 1.6;">${explanation || "沒有詳解說明。"}</div>
-            </div>
-            <button class="next-btn" style="background: ${color}; color: white; border: none; padding: 12px 30px; border-radius: 50px; font-size: 18px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-                下一題 <i class="fas fa-arrow-right"></i>
-            </button>
-        </div>
+    const icon = isCorrect ?
+        `<svg viewBox="0 0 24 24" style="width:50px;height:50px;fill:${color};"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5" stroke="white" stroke-width="2" fill="none"/></svg>` :
+        `<svg viewBox="0 0 24 24" style="width:50px;height:50px;fill:${color};"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6 M9 9l6 6" stroke="white" stroke-width="2" fill="none"/></svg>`;
+
+    // Create inline explanation element
+    const explanationDiv = document.createElement('div');
+    explanationDiv.className = 'inline-explanation';
+    explanationDiv.style.cssText = `
+        margin-top: 20px;
+        padding: 20px;
+        background: ${bgColor};
+        border-radius: 15px;
+        border-left: 5px solid ${color};
+        text-align: center;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.4s ease;
     `;
 
-    document.body.appendChild(overlay);
+    explanationDiv.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
+            ${icon}
+            <h3 style="color: ${color}; margin: 0; font-size: 24px;">${title}</h3>
+        </div>
+        <div style="text-align: left; background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; max-height: 30vh; overflow-y: auto;">
+            <div style="font-size: 15px; line-height: 1.6; color: #333;">${explanation || "沒有詳解說明。"}</div>
+        </div>
+        <button class="next-btn" style="
+            background: ${color}; 
+            color: white; 
+            border: none; 
+            padding: 12px 30px; 
+            border-radius: 50px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
+        ">
+            ${currentQuestionIndex + 1 < currentQuestions.length ? '下一題' : '看結果'} →
+        </button>
+    `;
 
-    // Animation
+    // Insert after quiz-content
+    quizContent.parentNode.insertBefore(explanationDiv, mobileOptions);
+
+    // Animate in
     requestAnimationFrame(() => {
-        overlay.style.opacity = '1';
-        overlay.querySelector('div').style.transform = 'scale(1)';
+        explanationDiv.style.opacity = '1';
+        explanationDiv.style.transform = 'translateY(0)';
     });
 
-    const nextBtn = overlay.querySelector('.next-btn');
+    const nextBtn = explanationDiv.querySelector('.next-btn');
+    nextBtn.onmouseover = () => nextBtn.style.transform = 'scale(1.05)';
+    nextBtn.onmouseout = () => nextBtn.style.transform = 'scale(1)';
     nextBtn.onclick = () => {
-        overlay.style.opacity = '0';
-        overlay.querySelector('div').style.transform = 'scale(0.8)';
+        explanationDiv.style.opacity = '0';
+        explanationDiv.style.transform = 'translateY(-20px)';
         setTimeout(() => {
-            overlay.remove();
+            explanationDiv.remove();
+            mobileOptions.classList.remove('fade-out');
             callback();
         }, 300);
     };
