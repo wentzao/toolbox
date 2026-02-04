@@ -14,6 +14,11 @@ document.addEventListener('gesturestart', function (e) {
 });
 
 document.addEventListener('touchmove', function (e) {
+    // 允許在詳解 modal 內滾動
+    if (e.target.closest('.explanation-modal-content')) {
+        return;
+    }
+
     // 在答題階段禁止滾動
     if (!document.body.classList.contains('show-results')) {
         e.preventDefault();

@@ -234,12 +234,13 @@ body.show-results .header-image.quiz-mode {
 }
 
 .quiz-layout {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: auto 1fr;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 0;
-    /* 移除底部邊距 */
+    gap: 15px;
+    margin-bottom: 20px;
+    width: 100%;
+    min-height: calc(100vh - 200px);
 }
 
 .quiz-content {
@@ -317,15 +318,19 @@ body.show-results .header-image.quiz-mode {
 .question {
     font-size: 32px;
     font-weight: 600;
-    margin: 15px 0;
-    padding: 10px;
-    min-height: calc(1.4em * 2 + 20px);
+    margin: 0;
+    padding: 15px;
+    height: 140px;
+    max-height: 140px;
+    overflow-y: auto;
     color: white;
     text-align: left;
     line-height: 1.6;
     width: 100%;
-    transition: all 0.5s ease;
+    transition: opacity 0.5s ease;
     text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
 }
 
 .question.hide {
@@ -630,9 +635,9 @@ body.show-results .header-image.quiz-mode {
 
     .question {
         font-size: 22px;
-        margin: 8px 0;
-        padding: 8px;
-        min-height: calc(1.4em * 2 + 16px);
+        padding: 10px;
+        height: 100px;
+        max-height: 100px;
     }
 
     .quiz-content .options {
@@ -766,18 +771,14 @@ body.show-results .header-image.quiz-mode {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 20px;
-    margin-top: 20px;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    background: transparent;
+    padding: 0;
+    margin-top: 30px;
     opacity: 0;
     transform: translateY(30px);
     visibility: hidden;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     scroll-margin-top: 20px;
-    /* 添加滾動邊距 */
 }
 
 .explanation-section.show {
@@ -792,7 +793,7 @@ body.show-results .header-image.quiz-mode {
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
     height: 0;
     overflow: hidden;
     transition: all 0.5s ease;
