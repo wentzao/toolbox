@@ -174,7 +174,7 @@ body.show-results .container {
     /* Bouncy effect */
     /* margin-top: 1rem; Removed */
     position: absolute;
-    top: 20%;
+    top: 12%;
     /* Position for Welcome/Result screen */
     left: 50%;
     transform: translateX(-50%);
@@ -203,7 +203,7 @@ body.show-results .container {
 /* We might need to push Welcome Screen down manually since image is out of flow */
 
 .welcome-screen {
-    margin-top: 250px;
+    margin-top: 320px;
     /* Space for the absolute image */
 }
 
