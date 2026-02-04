@@ -169,7 +169,7 @@ body.show-results .container {
 .header-image {
     width: 100%;
     max-width: 500px;
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
     transition: all 0.8s ease;
     margin-top: 1rem;
     position: relative;
@@ -201,7 +201,7 @@ body.show-results .header-image.quiz-mode {
 .game-container {
     width: 100%;
     max-width: 800px;
-    padding: 20px;
+    /* padding: 20px; */
     display: none;
     opacity: 0;
     transform: translateY(50px);
@@ -237,7 +237,7 @@ body.show-results .header-image.quiz-mode {
     display: grid;
     grid-template-rows: auto 1fr;
     align-items: center;
-    gap: 15px;
+    /* gap: 15px; */
     margin-bottom: 20px;
     width: 100%;
     min-height: calc(100vh - 200px);
