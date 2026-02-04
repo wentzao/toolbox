@@ -176,6 +176,9 @@ async function startQuiz() {
     document.getElementById('headerImage').classList.add('quiz-mode');
     document.getElementById('welcomeScreen').style.display = 'none';
 
+    // Show fixed UI elements
+    document.body.classList.add('game-active');
+
     const gameContainer = document.getElementById('gameContainer');
     gameContainer.style.display = 'block';
     setTimeout(() => {
@@ -388,6 +391,7 @@ function showInstantExplanationInline(isCorrect, explanation, callback) {
 function showFinalResult() {
     const percentage = (score / currentQuestions.length) * 100;
     document.body.classList.add('show-results');
+    document.body.classList.remove('game-active'); // Hide fixed UI elements
 
     // 先隱藏問題容器
     const questionElement = document.getElementById('question');

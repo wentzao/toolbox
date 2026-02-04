@@ -226,6 +226,12 @@ body.show-results .header-image.quiz-mode {
     left: 0;
     right: 0;
     z-index: 200;
+    display: none;
+    /* Hide by default */
+}
+
+body.game-active .progress {
+    display: block;
 }
 
 .progress-bar {
@@ -666,19 +672,25 @@ body.show-results .header-image.quiz-mode {
     }
 
     .mobile-options {
-        display: flex;
+        display: none;
+        /* Default hidden */
         flex-direction: row;
         justify-content: center;
         gap: 20px;
         width: 100%;
         position: fixed;
-        bottom: 10px;
+        bottom: 0;
+        /* Align to bottom */
         left: 0;
         right: 0;
         z-index: 100;
         padding: 10px 0;
         padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
         background: linear-gradient(to top, rgba(255, 255, 255, 0.1), transparent);
+    }
+
+    body.game-active .mobile-options {
+        display: flex;
     }
 
     .progress {

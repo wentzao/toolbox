@@ -31,9 +31,7 @@
         </div>
 
         <div class="game-container" id="gameContainer">
-            <div class="progress">
-                <div class="progress-bar" id="progressBar"></div>
-            </div>
+
             <div class="quiz-layout">
                 <div class="quiz-content">
                     <div class="options">
@@ -46,10 +44,7 @@
                         <button class="option-btn o" onclick="checkAnswer(true)">O</button>
                     </div>
                 </div>
-                <div class="mobile-options">
-                    <button class="option-btn x" onclick="checkAnswer(false)">X</button>
-                    <button class="option-btn o" onclick="checkAnswer(true)">O</button>
-                </div>
+
                 <div class="question" id="question"></div>
                 <div class="result" id="result"></div>
             </div>
@@ -87,7 +82,18 @@
         </div>
     </div>
 
-    <script src="js/script.js?v=1.2"></script>
+
+
+    <!-- Fixed UI Elements -->
+    <div class="progress">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="mobile-options">
+        <button class="option-btn x" onclick="checkAnswer(false)">X</button>
+        <button class="option-btn o" onclick="checkAnswer(true)">O</button>
+    </div>
+
+    <script src="js/script.js?v=1.3"></script>
 </body>
 
 </html>
