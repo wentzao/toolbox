@@ -167,46 +167,36 @@ body.show-results .container {
 }
 
 .header-image {
-    width: 60%;
-    max-width: 300px;
-    /* margin-bottom: 20px; Removed since we use absolute */
-    transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-    /* Bouncy effect */
-    /* margin-top: 1rem; Removed */
-    position: absolute;
-    top: 12%;
-    /* Position for Welcome/Result screen */
-    left: 50%;
-    transform: translateX(-50%);
+    width: 100%;
+    max-width: 500px;
+    margin-bottom: 20px;
+    transition: all 0.8s ease;
+    margin-top: 1rem;
+    position: relative;
+    /* 設置為相對定位 */
     z-index: 10;
+    /* 確保在最上層 */
 }
 
 .header-image.quiz-mode {
     width: 10%;
     max-width: 120px;
     margin: 0;
-    /* position: absolute; Already absolute */
+    position: absolute;
     top: 15px;
     left: 20px;
-    transform: translateX(0);
-    /* Reset centering */
+    transform: none;
     padding: 0;
 }
 
 /* 確保在結果頁面中，標題圖片保持位置不變 */
-/* Since we remove quiz-mode in JS, it reverts to .header-image base style */
-/* If we want Result page to look like Welcome page (centered), base style works. */
-/* But we might need to adjust 'top' if result content needs space. */
-/* For now, assume Welcome position is fine for Results too. */
-
-/* User requested "Complete display effect" -> This supports it. */
-/* We might need to push Welcome Screen down manually since image is out of flow */
-
-.welcome-screen {
-    margin-top: 320px;
-    /* Space for the absolute image */
+body.show-results .header-image.quiz-mode {
+    position: relative;
+    top: 0;
+    left: 0;
+    max-width: 250px;
+    margin: 0;
 }
-
 
 .game-container {
     width: 100%;
