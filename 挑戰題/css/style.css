@@ -672,12 +672,16 @@ body.show-results .header-image.quiz-mode {
         gap: 20px;
         width: 100%;
         position: fixed;
-        bottom: 60px;
+        bottom: calc(20px + env(safe-area-inset-bottom, 0px));
         left: 0;
         right: 0;
         z-index: 100;
         padding: 15px 0;
         background: linear-gradient(to top, rgba(255, 255, 255, 0.1), transparent);
+    }
+
+    .progress {
+        bottom: env(safe-area-inset-bottom, 0px);
     }
 
     .welcome-screen {
