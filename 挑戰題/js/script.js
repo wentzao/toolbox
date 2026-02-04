@@ -196,6 +196,9 @@ const floatingItems = document.querySelector('.floating-items');
 const items = ['📚', '✏️', '🎨', '🔢', '📐', '✂️', '🎯', '🎲', '🎮', '🧩', '🔍', '💡', '🌟', '⭐', '✨'];
 
 function createFloatingItem() {
+    // Limit max floating items to prevent lag
+    if (floatingItems.children.length >= 15) return;
+
     const item = document.createElement('div');
     item.className = `floating-item ${Math.random() > 0.6 ? 'slow' : Math.random() > 0.3 ? '' : 'fast'}`;
     item.textContent = items[Math.floor(Math.random() * items.length)];
