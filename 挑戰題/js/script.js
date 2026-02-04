@@ -388,8 +388,9 @@ function showFinalResult() {
         questionElement.textContent = '';
     }, 500);
 
-    // 確保標題圖片位置不變
+    // 確保標題圖片位置不變並恢復大小
     const headerImage = document.getElementById('headerImage');
+    headerImage.classList.remove('quiz-mode');
     headerImage.style.position = 'relative';
     headerImage.style.zIndex = '10';
 
