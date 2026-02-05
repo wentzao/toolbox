@@ -594,7 +594,7 @@ body.game-active .progress {
 .restart-btn {
     padding: 15px 40px;
     font-size: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #02a568;
     color: white;
     border: none;
     border-radius: 25px;
@@ -602,12 +602,12 @@ body.game-active .progress {
     transition: all 0.3s ease;
     margin: 30px auto;
     display: block;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    /* box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); */
 }
 
 .restart-btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+    /* box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5); */
 }
 
 .restart-btn:active {
@@ -664,10 +664,10 @@ body.game-active .progress {
     font-size: 16px;
     color: #555;
     line-height: 1.7;
-    background: #f8f9fa;
+    background: #e5f5fb;
     padding: 15px;
     border-radius: 12px;
-    border-left: 4px solid #667eea;
+    /* border-left: 4px solid #667eea; */
 }
 
 .mobile-options {
