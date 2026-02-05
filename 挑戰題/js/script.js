@@ -399,110 +399,139 @@ function showFinalResult() {
     // 先隱藏問題容器
     const questionElement = document.getElementById('question');
     questionElement.classList.add('hide');
+
     setTimeout(() => {
         questionElement.textContent = '';
-        questionElement.style.display = 'none'; // Completely hide it to verify space
-    }, 500);
+        questionElement.style.display = 'none'; // Completely hide it
 
-    // 確保標題圖片位置不變並恢復大小
-    const headerImage = document.getElementById('headerImage');
-    headerImage.classList.remove('quiz-mode');
-    headerImage.style.position = 'relative';
-    headerImage.style.zIndex = '10';
+        // 確保標題圖片位置不變並恢復大小
+        const headerImage = document.getElementById('headerImage');
+        headerImage.classList.remove('quiz-mode');
+        headerImage.style.position = 'relative';
+        headerImage.style.zIndex = '10';
 
-    let explanationHTML = '<div class="explanation-section"><div class="explanation-cards">';
-    currentQuestions.forEach((q, index) => {
-        const correctSvg = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5"/></svg>`;
-        const incorrectSvg = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6 M9 9l6 6"/></svg>`;
+        // Show result content AFTER question is gone to avoid jump
+        const resultElement = document.getElementById('result');
+        let starsHtml = '';
+        for (let i = 0; i < 3; i++) {
+            if (percentage === 100) {
+                starsHtml += `<div class="star show"><img src="images/star.png"></div>`;
+            } else if (percentage >= 60 && i < 2) {
+                starsHtml += `<div class="star show"><img src="images/star.png"></div>`;
+            } else if (percentage >= 30 && i < 1) {
+                starsHtml += `<div class="star show"><img src="images/star.png"></div>`;
+            } else {
+                starsHtml += `<div class="star"><img src="images/star-empty.png" style="opacity: 0.3"></div>`;
+            }
+        }
 
-        explanationHTML += `
-            <div class="explanation-card">
-                <div class="card-question">
-                    <span class="answer-indicator ${q.correctAnswer ? 'correct' : 'incorrect'}">
-                        ${q.correctAnswer ? correctSvg : incorrectSvg}
-                    </span>
-                    ${q.question}
-                </div>
-                <div class="card-explanation">
-                    ${q.explanation}
-                </div>
+        // Generate Result HTML
+        let feedbackText = '';
+        if (currentQuestionSet && currentQuestionSet.feedbacks) {
+            // Find the feedback that matches the score percentage
+            // Sort by minPercentage descending to find the highest match
+            const sortedFeedbacks = [...currentQuestionSet.feedbacks].sort((a, b) => b.minPercentage - a.minPercentage);
+            const feedback = sortedFeedbacks.find(f => percentage >= f.minPercentage);
+            if (feedback) {
+                feedbackText = feedback.text;
+            } else {
+                // Default fallback
+                if (percentage === 100) feedbackText = "太厲害了！全部答對！";
+                else if (percentage >= 80) feedbackText = "很棒喔！繼續加油！";
+                else if (percentage >= 60) feedbackText = "及格了！再接再厲！";
+                else feedbackText = "差一點點，再試一次！";
+            }
+        } else {
+            if (percentage === 100) feedbackText = "太厲害了！全部答對！";
+            else if (percentage >= 80) feedbackText = "很棒喔！繼續加油！";
+            else if (percentage >= 60) feedbackText = "及格了！再接再厲！";
+            else feedbackText = "差一點點，再試一次！";
+        }
+
+
+        // 詳解區域
+        let explanationsHtml = '';
+        explanationsHtml = `<div class="explanation-section" style="width: 100%; max-width: 500px; margin-top: 20px;">`;
+        currentQuestions.forEach((q, index) => {
+            const isCorrect = q.correctAnswer; // Assuming q.correctAnswer is boolean or truthy for correct
+            const color = q.correctAnswer ? "#4CAF50" : "#F44336";
+            const answerText = q.correctAnswer ? "O" : "X";
+
+            // ... simplify explanation card structure as requested ...
+            explanationsHtml += `
+                 <div class="explanation-card" style="background: rgba(255,255,255,0.9); border-radius: 15px; padding: 15px; margin-bottom: 15px; text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+                         <span style="font-weight: bold; color: #555;">第 ${index + 1} 題</span>
+                         <span style="font-weight: bold; color: ${color}; font-size: 18px;">${answerText}</span>
+                     </div>
+                     <div style="margin-bottom: 8px; font-weight: 500; color: #333;">${q.question}</div>
+                     <div style="font-size: 14px; color: #666; line-height: 1.5; background: #f5f5f5; padding: 10px; border-radius: 8px;">
+                        ${q.explanation || "沒有詳解"}
+                     </div>
+                 </div>
+             `;
+        });
+        explanationsHtml += `</div>`;
+
+        // [Custom Feature] Button Text Logic
+        const btnText = currentQuestionSet.checklistButtonText;
+        const hasBtnText = btnText && btnText.trim().length > 0;
+        const finalBtnText = hasBtnText ? btnText : '領取應備物品清單';
+        const btnDisplay = hasBtnText ? 'flex' : 'none';
+
+
+        resultElement.innerHTML = `
+            <div class="stars-container">
+                ${starsHtml}
             </div>
+            <div class="score-text">得分: ${score} / ${currentQuestions.length}</div>
+            <div class="feedback-text">${feedbackText}</div>
+            <div class="action-buttons">
+                <button class="reveal-btn" onclick="revealExplanations()">點我看詳解</button>
+                <button class="checklist-btn" onclick="showChecklistModal()" style="display: ${btnDisplay}">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"></path>
+                        <rect x="9" y="3" width="6" height="4" rx="2"></rect>
+                        <path d="M9 14l2 2 4-4"></path>
+                    </svg>
+                    <span class="checklist-btn-text">${finalBtnText}</span>
+                </button>
+            </div>
+            ${explanationsHtml}
+            <button class="restart-btn" onclick="location.reload()">再玩一次</button>
         `;
-    });
-    explanationHTML += `
-        <button class="start-btn" onclick="location.reload()" style="width: 200px;">重新開始</button>
-    </div></div>`;
 
-    // 計算星星數量
-    const starCount = Math.ceil((percentage / 100) * 3);
-
-    // 獲取回饋文字
-    const feedback = getFeedbackText(percentage);
-
-    // [Custom Feature] Button Text Logic
-    const btnText = currentQuestionSet.checklistButtonText;
-    const hasBtnText = btnText && btnText.trim().length > 0;
-    const finalBtnText = hasBtnText ? btnText : '領取應備物品清單';
-    const btnDisplay = hasBtnText ? 'flex' : 'none';
-
-    // 隱藏問題容器
-    document.getElementById('result').innerHTML = `
-        <div class="stars-container">
-            ${Array(3).fill().map((_, i) => `
-                <div class="star${i < starCount ? ' show' : ''}" data-index="${i}">
-                    <img src="star.png" alt="Star ${i + 1}">
-                </div>
-            `).join('')}
-        </div>
-        <div class="score-text">
-            得分：${score}/${currentQuestions.length}
-        </div>
-        <div class="feedback-text">
-            ${feedback}
-        </div>
-        <div class="action-buttons">
-            <button class="reveal-btn" onclick="revealExplanations()">點我看詳解</button>
-            <button class="checklist-btn" onclick="showChecklistModal()" style="display: ${btnDisplay}">
-                <svg viewBox="0 0 24 24">
-                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"></path>
-                    <rect x="9" y="3" width="6" height="4" rx="2"></rect>
-                    <path d="M9 14l2 2 4-4"></path>
-                </svg>
-                <span class="checklist-btn-text">${finalBtnText}</span>
-            </button>
-        </div>
-        ${explanationHTML}
-    `;
-
-    // 動畫效果
-    setTimeout(() => {
+        resultElement.classList.add('show');
+        // Re-integrate legacy animation logic
         document.querySelectorAll('.star').forEach((star, index) => {
             setTimeout(() => {
-                if (index < starCount) {
+                if (index < document.querySelectorAll('.star').length) {
                     star.classList.add('show');
                 }
-            }, index * 300); // 增加間隔時間讓3D效果更明顯
+            }, index * 300);
         });
 
         setTimeout(() => {
-            document.querySelector('.score-text').classList.add('show');
+            const scoreText = document.querySelector('.score-text');
+            if (scoreText) scoreText.classList.add('show');
         }, 1000);
 
         setTimeout(() => {
-            document.querySelector('.feedback-text').classList.add('show');
+            const feedbackText = document.querySelector('.feedback-text');
+            if (feedbackText) feedbackText.classList.add('show');
         }, 1300);
 
         setTimeout(() => {
-            document.querySelector('.action-buttons').classList.add('show');
-            // If instant explanation is on, we don't necessarily reveal all at end automatically, 
-            // or we do? User removed "automatically show full explanation" request.
-            // Let's keep it manual reveal for now unless requested.
+            const actionButtons = document.querySelector('.action-buttons');
+            if (actionButtons) actionButtons.classList.add('show');
         }, 1600);
-    }, 100);
 
-    document.querySelector('.quiz-content').style.display = 'none';
-    document.querySelector('.mobile-options').style.display = 'none';
-    document.querySelector('.progress').style.display = 'none';
+        // Clean up visibility of other elements immediately (or after short delay to match fade)
+        // Already handled by classes but ensuring display:none helps
+        document.querySelector('.quiz-content').style.display = 'none';
+        document.querySelector('.mobile-options').style.display = 'none';
+        document.querySelector('.progress').style.display = 'none';
+    }, 500); // End of main setTimeout
 }
 
 function getFeedbackText(percentage) {
@@ -569,8 +598,8 @@ function updateScrollbar() {
             const scrollPercent = window.scrollY / (contentHeight - windowHeight);
             const thumbHeight = Math.max(40, windowHeight * (windowHeight / contentHeight));
 
-            thumb.style.height = `${thumbHeight}px`;
-            thumb.style.top = `${scrollPercent * (windowHeight - thumbHeight)}px`;
+            thumb.style.height = `${thumbHeight} px`;
+            thumb.style.top = `${scrollPercent * (windowHeight - thumbHeight)} px`;
             scrollbar.classList.add('show');
         } else {
             scrollbar.classList.remove('show');
