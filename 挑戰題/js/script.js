@@ -632,14 +632,16 @@ async function shareToFriends() {
         return;
     }
 
-    // Get challenge info for Flex Message
-    const imageUrl = document.getElementById('headerImage')?.src || 'https://rainbowstudent.wentzao.com/static/images/logo.png';
+    // Use custom FlexMessage from challenge data if available
+    let flexMessageContent;
 
-    // Create Flex Message
-    const flexMessage = {
-        type: 'flex',
-        altText: `來挑戰「${title}」！`,
-        contents: {
+    if (currentQuestionSet?.flexMessage) {
+        // Use custom FlexMessage from JSON
+        flexMessageContent = currentQuestionSet.flexMessage;
+    } else {
+        // Fallback: simple default message
+        const imageUrl = document.getElementById('headerImage')?.src || 'https://rainbowstudent.wentzao.com/static/images/logo.png';
+        flexMessageContent = {
             type: 'bubble',
             hero: {
                 type: 'image',
@@ -654,17 +656,9 @@ async function shareToFriends() {
                 contents: [
                     {
                         type: 'text',
-                        text: '🎯 挑戰邀請',
-                        weight: 'bold',
-                        size: 'sm',
-                        color: '#1DB446'
-                    },
-                    {
-                        type: 'text',
                         text: title,
                         weight: 'bold',
                         size: 'xl',
-                        margin: 'md',
                         wrap: true
                     },
                     {
@@ -696,7 +690,14 @@ async function shareToFriends() {
                 ],
                 flex: 0
             }
-        }
+        };
+    }
+
+    // Create Flex Message wrapper
+    const flexMessage = {
+        type: 'flex',
+        altText: `來挑戰「${title}」！`,
+        contents: flexMessageContent
     };
 
     try {
