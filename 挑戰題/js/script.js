@@ -160,6 +160,33 @@ window.addEventListener('DOMContentLoaded', async () => {
     await initializePage();
 });
 
+// Toast 通知函數
+function showToast(message, type = 'success') {
+    // 移除現有的 toast
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    // 觸發動畫
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    // 2.5秒後自動消失
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            toast.remove();
+        }, 400);
+    }, 2500);
+}
+
 // 開始測驗
 async function startQuiz() {
     await loadQuestionSet();
@@ -491,7 +518,7 @@ function showFinalResult() {
                         <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
                         <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
                     </svg>
-                    分享給朋友
+                    <span class="share-btn-text">分享給朋友</span>
                 </button>
                 <button class="reveal-btn" onclick="revealExplanations()">點我看詳解</button>
                 <button class="checklist-btn" onclick="showChecklistModal()" style="display: ${btnDisplay}">
@@ -504,7 +531,6 @@ function showFinalResult() {
                 </button>
             </div>
             ${explanationsHtml}
-            <button class="restart-btn" onclick="location.reload()">再玩一次</button>
         `;
 
         resultElement.classList.add('show');
@@ -553,6 +579,9 @@ function revealExplanations() {
     const cards = document.querySelector('.explanation-cards');
     if (cards) cards.classList.add('show');
 
+    // 啟用滾動
+    document.body.classList.add('details-visible');
+
     // 滾動到詳解區域
     explanationSection.scrollIntoView({ behavior: 'smooth' });
 
@@ -560,24 +589,51 @@ function revealExplanations() {
     setTimeout(updateScrollbar, 500);
 }
 
-// 分享給朋友 - Share to LINE Friends
+// 分享給朋友 - Share to LINE Friends or Copy Link
 async function shareToFriends() {
-    if (!liffInitialized) {
-        alert('LINE 功能尚未初始化，請稍後再試');
+    const setId = getQuestionSetId();
+    const title = currentQuestionSet?.title || '挑戰題';
+    const challengeUrl = `https://liff.line.me/${LIFF_ID}?set=${setId}`;
+
+    // 如果不在 LIFF 環境，複製連結
+    if (!liffInitialized || !liff.isInClient()) {
+        try {
+            await navigator.clipboard.writeText(challengeUrl);
+            showToast('連結複製已成功', 'success');
+        } catch (error) {
+            console.error('Copy failed:', error);
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = challengeUrl;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast('連結複製已成功', 'success');
+            } catch (e) {
+                showToast('複製失敗，請手動複製', 'info');
+            }
+            document.body.removeChild(textArea);
+        }
         return;
     }
 
     // Check if shareTargetPicker is available
     if (!liff.isApiAvailable('shareTargetPicker')) {
-        alert('分享功能僅在 LINE 應用程式內可用');
+        // Fallback to copy
+        try {
+            await navigator.clipboard.writeText(challengeUrl);
+            showToast('連結複製已成功', 'success');
+        } catch (error) {
+            showToast('分享功能不可用', 'info');
+        }
         return;
     }
 
-    // Get challenge info
-    const setId = getQuestionSetId();
-    const title = currentQuestionSet?.title || '挑戰題';
+    // Get challenge info for Flex Message
     const imageUrl = document.getElementById('headerImage')?.src || 'https://rainbowstudent.wentzao.com/static/images/logo.png';
-    const challengeUrl = `https://liff.line.me/${LIFF_ID}?set=${setId}`;
 
     // Create Flex Message
     const flexMessage = {
@@ -647,14 +703,14 @@ async function shareToFriends() {
         const result = await liff.shareTargetPicker([flexMessage]);
         if (result) {
             // User selected someone to share
-            console.log('Share successful');
+            showToast('分享已成功', 'success');
         } else {
-            // User cancelled
+            // User cancelled - no toast needed
             console.log('Share cancelled by user');
         }
     } catch (error) {
         console.error('Share error:', error);
-        alert('分享失敗，請稍後再試');
+        showToast('分享失敗，請稍後再試', 'info');
     }
 }
 

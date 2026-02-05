@@ -94,8 +94,12 @@ body {
 }
 
 body.show-results {
-    overflow-y: auto;
+    overflow-y: hidden;
     height: auto;
+}
+
+body.show-results.details-visible {
+    overflow-y: auto;
 }
 
 .gradient-background {
@@ -477,13 +481,16 @@ body.game-active .progress {
 
 .action-buttons {
     display: flex;
-    gap: 20px;
+    flex-direction: column;
+    gap: 15px;
     margin-top: 40px;
-    flex-wrap: wrap;
     justify-content: center;
+    align-items: center;
     opacity: 0;
     transform: translateY(20px);
     transition: all 0.5s ease 0.6s;
+    width: 100%;
+    max-width: 350px;
 }
 
 .action-buttons.show {
@@ -491,35 +498,89 @@ body.game-active .progress {
     transform: translateY(0);
 }
 
-/* Share Button - 分享給朋友 */
+/* Share Button - 分享給朋友 (matching reveal-btn style) */
 .share-btn {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    font-size: 16px;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px 40px;
+    font-size: 24px;
     background: #06C755;
     color: white;
     border: none;
-    border-radius: 25px;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(6, 199, 85, 0.3);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
 }
 
 .share-btn svg {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
+}
+
+.share-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
 }
 
 .share-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(6, 199, 85, 0.4);
-    background: #05B64D;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(6, 199, 85, 0.4);
+}
+
+.share-btn:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .share-btn:active {
-    transform: translateY(0);
+    transform: translateY(1px);
+}
+
+/* Toast Notification */
+.toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 500;
+    z-index: 100000;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast.success {
+    background: rgba(6, 199, 85, 0.95);
+}
+
+.toast.info {
+    background: rgba(33, 150, 243, 0.95);
 }
 
 /* Reveal Button - 點我看詳解 */
@@ -1005,9 +1066,10 @@ body.game-active .progress {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    font-family: 'BpmfGenSenRounded', Arial, sans-serif;
+    font-family: inherit;
     position: relative;
     overflow: hidden;
+    width: 100%;
 }
 
 .reveal-btn::before {
