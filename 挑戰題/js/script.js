@@ -415,13 +415,13 @@ function showFinalResult() {
         let starsHtml = '';
         for (let i = 0; i < 3; i++) {
             if (percentage === 100) {
-                starsHtml += `<div class="star show"><img src="images/star.png"></div>`;
+                starsHtml += `<div class="star show"><img src="star.png"></div>`;
             } else if (percentage >= 60 && i < 2) {
-                starsHtml += `<div class="star show"><img src="images/star.png"></div>`;
+                starsHtml += `<div class="star show"><img src="star.png"></div>`;
             } else if (percentage >= 30 && i < 1) {
-                starsHtml += `<div class="star show"><img src="images/star.png"></div>`;
+                starsHtml += `<div class="star show"><img src="star.png"></div>`;
             } else {
-                starsHtml += `<div class="star"><img src="images/star-empty.png" style="opacity: 0.3"></div>`;
+                starsHtml += `<div class="star"><img src="star.png" style="opacity: 0.3; filter: grayscale(100%);"></div>`;
             }
         }
 
