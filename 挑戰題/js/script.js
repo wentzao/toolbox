@@ -245,7 +245,10 @@ function updateQuestion() {
         // 先設置新圖片，然後更新問題文字
         questionImage.src = question.image;
         questionImage.style.display = 'block';
-        document.getElementById('question').textContent = question.question;
+        const questionEl = document.getElementById('question');
+        questionEl.textContent = question.question;
+        questionEl.classList.remove('hide');
+        questionEl.style.removeProperty('display'); // Restore visibility
 
         document.getElementById('result').textContent = '';
 
@@ -398,6 +401,7 @@ function showFinalResult() {
     questionElement.classList.add('hide');
     setTimeout(() => {
         questionElement.textContent = '';
+        questionElement.style.display = 'none'; // Completely hide it to verify space
     }, 500);
 
     // 確保標題圖片位置不變並恢復大小
