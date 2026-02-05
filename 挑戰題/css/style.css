@@ -254,6 +254,10 @@ body.game-active .progress {
     min-height: calc(100vh - 200px);
 }
 
+body.show-results .quiz-layout {
+    min-height: auto;
+}
+
 .quiz-content {
     width: 100%;
     display: flex;
@@ -1031,7 +1035,6 @@ body.game-active .progress {
     transition: transform 0.3s ease;
     width: 100%;
     max-width: 800px;
-    margin: 0 auto;
 }
 
 .explanation-card:hover {
