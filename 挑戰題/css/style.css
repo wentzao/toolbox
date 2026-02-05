@@ -241,8 +241,8 @@ body.game-active .progress {
 }
 
 .quiz-layout {
-    /* display: grid; */
-    grid-template-rows: auto 1fr;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     /* gap: 15px; */
     margin-bottom: 20px;
@@ -334,6 +334,9 @@ body.game-active .progress {
     width: 100%;
     transition: opacity 0.5s ease;
     text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 0, 0, 0.3);
+    flex: 1;
+    display: flex;
+    align-items: center;
 }
 
 .question.hide {
@@ -633,7 +636,7 @@ body.game-active .progress {
     .quiz-image-container {
         width: 280px;
         height: 280px;
-        margin: 15px 0;
+        margin: 40px 0 20px 0;
     }
 
     .question {
