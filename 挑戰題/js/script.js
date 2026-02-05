@@ -453,23 +453,19 @@ function showFinalResult() {
         let explanationsHtml = '';
         explanationsHtml = `<div class="explanation-section" style="width: 100%; max-width: 500px; margin-top: 20px;">`;
         currentQuestions.forEach((q, index) => {
-            const isCorrect = q.correctAnswer; // Assuming q.correctAnswer is boolean or truthy for correct
             const color = q.correctAnswer ? "#4CAF50" : "#F44336";
             const answerText = q.correctAnswer ? "O" : "X";
 
-            // ... simplify explanation card structure as requested ...
             explanationsHtml += `
-                 <div class="explanation-card" style="background: rgba(255,255,255,0.9); border-radius: 15px; padding: 15px; margin-bottom: 15px; text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
-                         <span style="font-weight: bold; color: #555;">第 ${index + 1} 題</span>
-                         <span style="font-weight: bold; color: ${color}; font-size: 18px;">${answerText}</span>
-                     </div>
-                     <div style="margin-bottom: 8px; font-weight: 500; color: #333;">${q.question}</div>
-                     <div style="font-size: 14px; color: #666; line-height: 1.5; background: #f5f5f5; padding: 10px; border-radius: 8px;">
-                        ${q.explanation || "沒有詳解"}
-                     </div>
-                 </div>
-             `;
+                <div class="explanation-card">
+                    <div class="card-header">
+                        <span>第 ${index + 1} 題</span>
+                        <span style="color: ${color}; font-size: 20px; font-weight: bold;">${answerText}</span>
+                    </div>
+                    <div class="card-question">${q.question}</div>
+                    <div class="card-explanation">${q.explanation || "沒有詳解"}</div>
+                </div>
+            `;
         });
         explanationsHtml += `</div>`;
 
