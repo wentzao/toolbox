@@ -483,7 +483,7 @@ body.game-active .progress {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    margin-top: 40px;
+    margin: 40px auto 0 auto;
     justify-content: center;
     align-items: center;
     opacity: 0;
@@ -985,7 +985,7 @@ body.game-active .progress {
 .explanation-section {
     position: relative;
     width: 100%;
-    display: flex;
+    display: none;
     flex-direction: column;
     align-items: center;
     background: transparent;
@@ -994,11 +994,12 @@ body.game-active .progress {
     opacity: 0;
     transform: translateY(30px);
     visibility: hidden;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     scroll-margin-top: 20px;
 }
 
 .explanation-section.show {
+    display: flex;
     opacity: 1;
     transform: translateY(0);
     visibility: visible;
@@ -1237,7 +1238,6 @@ body.game-active .progress {
     .reveal-btn,
     .checklist-btn {
         width: 100%;
-        max-width: 300px;
     }
 }
 
