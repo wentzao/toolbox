@@ -491,6 +491,60 @@ body.game-active .progress {
     transform: translateY(0);
 }
 
+/* Share Button - 分享給朋友 */
+.share-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-size: 16px;
+    background: #06C755;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(6, 199, 85, 0.3);
+}
+
+.share-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.share-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(6, 199, 85, 0.4);
+    background: #05B64D;
+}
+
+.share-btn:active {
+    transform: translateY(0);
+}
+
+/* Reveal Button - 點我看詳解 */
+.reveal-btn {
+    padding: 12px 24px;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.reveal-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: white;
+    transform: translateY(-2px);
+}
+
+.reveal-btn:active {
+    transform: translateY(0);
+}
+
 .floating-items {
     position: fixed;
     width: 100%;

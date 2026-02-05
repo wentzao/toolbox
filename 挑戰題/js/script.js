@@ -483,6 +483,16 @@ function showFinalResult() {
             <div class="score-text">得分: ${score} / ${currentQuestions.length}</div>
             <div class="feedback-text">${feedbackText}</div>
             <div class="action-buttons">
+                <button class="share-btn" onclick="shareToFriends()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="18" cy="5" r="3"/>
+                        <circle cx="6" cy="12" r="3"/>
+                        <circle cx="18" cy="19" r="3"/>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                    </svg>
+                    分享給朋友
+                </button>
                 <button class="reveal-btn" onclick="revealExplanations()">點我看詳解</button>
                 <button class="checklist-btn" onclick="showChecklistModal()" style="display: ${btnDisplay}">
                     <svg viewBox="0 0 24 24">
@@ -539,13 +549,113 @@ function getFeedbackText(percentage) {
 function revealExplanations() {
     const explanationSection = document.querySelector('.explanation-section');
     explanationSection.classList.add('show');
-    document.querySelector('.explanation-cards').classList.add('show');
+    // Note: .explanation-cards might not exist with new structure, just use section
+    const cards = document.querySelector('.explanation-cards');
+    if (cards) cards.classList.add('show');
 
     // 滾動到詳解區域
     explanationSection.scrollIntoView({ behavior: 'smooth' });
 
     // 等待內容展開動畫完成後再更新滾動條
     setTimeout(updateScrollbar, 500);
+}
+
+// 分享給朋友 - Share to LINE Friends
+async function shareToFriends() {
+    if (!liffInitialized) {
+        alert('LINE 功能尚未初始化，請稍後再試');
+        return;
+    }
+
+    // Check if shareTargetPicker is available
+    if (!liff.isApiAvailable('shareTargetPicker')) {
+        alert('分享功能僅在 LINE 應用程式內可用');
+        return;
+    }
+
+    // Get challenge info
+    const setId = getQuestionSetId();
+    const title = currentQuestionSet?.title || '挑戰題';
+    const imageUrl = document.getElementById('headerImage')?.src || 'https://rainbowstudent.wentzao.com/static/images/logo.png';
+    const challengeUrl = `https://liff.line.me/${LIFF_ID}?set=${setId}`;
+
+    // Create Flex Message
+    const flexMessage = {
+        type: 'flex',
+        altText: `來挑戰「${title}」！`,
+        contents: {
+            type: 'bubble',
+            hero: {
+                type: 'image',
+                url: imageUrl,
+                size: 'full',
+                aspectRatio: '20:13',
+                aspectMode: 'cover'
+            },
+            body: {
+                type: 'box',
+                layout: 'vertical',
+                contents: [
+                    {
+                        type: 'text',
+                        text: '🎯 挑戰邀請',
+                        weight: 'bold',
+                        size: 'sm',
+                        color: '#1DB446'
+                    },
+                    {
+                        type: 'text',
+                        text: title,
+                        weight: 'bold',
+                        size: 'xl',
+                        margin: 'md',
+                        wrap: true
+                    },
+                    {
+                        type: 'text',
+                        text: '快來測試你的知識！',
+                        size: 'sm',
+                        color: '#999999',
+                        margin: 'md',
+                        wrap: true
+                    }
+                ]
+            },
+            footer: {
+                type: 'box',
+                layout: 'vertical',
+                spacing: 'sm',
+                contents: [
+                    {
+                        type: 'button',
+                        style: 'primary',
+                        height: 'sm',
+                        color: '#02a568',
+                        action: {
+                            type: 'uri',
+                            label: '開始挑戰',
+                            uri: challengeUrl
+                        }
+                    }
+                ],
+                flex: 0
+            }
+        }
+    };
+
+    try {
+        const result = await liff.shareTargetPicker([flexMessage]);
+        if (result) {
+            // User selected someone to share
+            console.log('Share successful');
+        } else {
+            // User cancelled
+            console.log('Share cancelled by user');
+        }
+    } catch (error) {
+        console.error('Share error:', error);
+        alert('分享失敗，請稍後再試');
+    }
 }
 
 function showChecklistModal() {
