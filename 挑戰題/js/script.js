@@ -481,7 +481,7 @@ function showFinalResult() {
         explanationsHtml = `<div class="explanation-section" style="width: 100%; max-width: 500px; margin-top: 20px;">`;
         currentQuestions.forEach((q, index) => {
             const color = q.correctAnswer ? "#4CAF50" : "#F44336";
-            const answerText = q.correctAnswer ? "〇" : "Ⅹ";
+            const answerText = q.correctAnswer ? "𐤏" : "✖";
 
             explanationsHtml += `
                 <div class="explanation-card">
